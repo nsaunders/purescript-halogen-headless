@@ -16,7 +16,7 @@ import Type.Row (type (+))
 type Options headingProps triggerProps panelProps a p i =
   Record
     ( AccordionItem.RenderOptions headingProps triggerProps panelProps p i
-    + ( items :: Array (Tuple a (Array (HH.HTML p i)))
+    + ( items :: Array (Tuple a (Tuple (Array (HH.HTML p i)) (Array (HH.HTML p i))))
       , value :: Maybe (Array a)
       , onValueChange :: Maybe (Array a -> i)
       )
@@ -49,7 +49,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, items, value: valuePro
       Hooks.pure $
         HH.div_ $
           items <#>
-            \(Tuple v content) ->
+            \(Tuple v (Tuple triggerContent panelContent)) ->
               accordionItem
                 AccordionItem.defaultOptions
                   { renderHeading = renderHeading
@@ -60,4 +60,5 @@ useAccordion { renderHeading, renderTrigger, renderPanel, items, value: valuePro
                   }
                 "foo"
                 "bar"
-                content
+                triggerContent
+                panelContent

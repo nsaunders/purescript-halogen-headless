@@ -13,11 +13,9 @@ component :: forall q i o m. MonadEffect m => Component q i o m
 component =
   let
     items =
-      [ Tuple 1 [HH.text "Item 1"]
-      , Tuple 2 [HH.text "Item 2"]
-      , Tuple 3 [HH.text "Item 3"]
-      , Tuple 4 [HH.text "Item 4"]
-      , Tuple 5 [HH.text "Item 5"]
+      [ Tuple 1 $ Tuple [HH.text "Summary 1"] [HH.text "Details 1"]
+      , Tuple 2 $ Tuple [HH.text "Summary 2"] [HH.text "Details 2"]
+      , Tuple 3 $ Tuple [HH.text "Summary 3"] [HH.text "Details 3"]
       ]
   in
     Hooks.component \_ _ -> Hooks.do

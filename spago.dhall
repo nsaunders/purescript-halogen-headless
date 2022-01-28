@@ -23,6 +23,7 @@ to generate this file without the comments in this block.
   , "maybe"
   , "prelude"
   , "psci-support"
+  , "record"
   , "tuples"
   , "typelevel-prelude"
   , "web-uievents"

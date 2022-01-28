@@ -8,6 +8,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.HTML.Properties.ARIA as HPA
+import Record as Record
 import Type.Row (type (+))
 import Web.UIEvent.MouseEvent (MouseEvent)
 
@@ -39,28 +40,39 @@ type OpenOptions i r =
   | r
   )
 
-type Options headingProps triggerProps panelProps p i =
-  Record (RenderOptions headingProps triggerProps panelProps p i + OpenOptions i + ())
-
-defaultOptions
-  :: forall p i
-   . Options HTMLh2 HTMLbutton HTMLdiv p i
-defaultOptions =
-  { renderHeading: HH.h2
-  , renderTrigger: HH.button
-  , renderPanel: HH.div
-  , open: false
+defaultOpenOptions :: forall i. Record (OpenOptions i ())
+defaultOpenOptions =
+  { open: false
   , onOpenChange: Nothing
   }
 
+type Options headingProps triggerProps panelProps p i =
+  RenderOptions headingProps triggerProps panelProps p i + OpenOptions i + ()
+
+defaultOptions
+  :: forall p i
+   . Record (Options HTMLh2 HTMLbutton HTMLdiv p i)
+defaultOptions = Record.merge defaultRenderOptions defaultOpenOptions
+
+type TriggerId = String
+
+type PanelId = String
+
+type Content p i = Array (HH.HTML p i)
+
+type TriggerContent p i = Content p i
+
+type PanelContent p i = Content p i
+
 accordionItem
   :: forall headingProps triggerProps panelProps p i
-   . Options headingProps (TriggerProps triggerProps) (PanelProps panelProps) p i
-  -> String
-  -> String
-  -> Array (HH.HTML p i)
+   . Record (Options headingProps (TriggerProps triggerProps) (PanelProps panelProps) p i)
+  -> TriggerId
+  -> PanelId
+  -> TriggerContent p i
+  -> PanelContent p i
   -> HH.HTML p i
-accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } triggerId panelId content =
+accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } triggerId panelId triggerContent panelContent =
   HH.div_
   [ renderHeading
     []
@@ -73,12 +85,12 @@ accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } 
           Just f -> [ HE.onClick \_ -> f $ not open ]
           Nothing -> []
       ))
-      [ HH.text "heading" ]
+      triggerContent
     ]
   , renderPanel
     [ HP.id panelId
     , HPA.role "region"
     , HPA.labelledBy triggerId
     ]
-    content
+    panelContent
   ]

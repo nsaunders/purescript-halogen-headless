@@ -12,7 +12,7 @@ import Halogen.Hooks as Hooks
 
 component :: forall q i o m. MonadEffect m => Component q i o m
 component = Hooks.component \_ _ -> Hooks.do
-  Hooks.pure $ accordionItem AccordionItem.defaultOptions { renderHeading = \p -> HH.h3 (p <> [ HP.style "margin: 0" ]) } "trigger" "content" [ HH.text "content" ]
+  Hooks.pure $ accordionItem AccordionItem.defaultOptions { renderHeading = \p -> HH.h3 (p <> [ HP.style "margin: 0" ]) } "trigger" "content" [ HH.text "summary" ] [ HH.text "content" ]
 {-
 component :: forall q i o m. Component q i o m
 component = Hooks.component \_ _ -> Hooks.do
