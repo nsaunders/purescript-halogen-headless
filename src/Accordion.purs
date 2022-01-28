@@ -13,7 +13,6 @@ import Halogen.Headless.AccordionItem as AccordionItem
 import Halogen.Headless.Internal.ElementId (UseElementIds, useElementIds)
 import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseState, useState)
 import Halogen.Hooks as Hooks
-import Partial.Unsafe (unsafePartial)
 import Type.Row (type (+))
 
 type ValueOptions a i r =
@@ -73,7 +72,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, value: valueProp, onVa
                     , open = v `elem` value
                     , onOpenChange = Just \open -> if open then select v else deselect v
                     }
-                  (fromMaybe "" $ elementIds !! i)
-                  (fromMaybe "" $ elementIds !! (i + length items))
+                  (fromMaybe "trigger" $ elementIds !! i)
+                  (fromMaybe "panel" $ elementIds !! (i + length items))
                   triggerContent
                   panelContent
