@@ -3,7 +3,7 @@ module Halogen.Headless.Accordion where
 import Prelude
 
 import DOM.HTML.Indexed (HTMLh2, HTMLbutton, HTMLdiv)
-import Data.Array ((!!), cons, elem, filter, length, mapWithIndex)
+import Data.Array (cons, elem, filter, length, mapWithIndex, take, (!!))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
@@ -18,14 +18,16 @@ import Record as Record
 import Type.Row (type (+))
 
 type ValueOptions a i r =
-  ( value :: Maybe (Array a)
+  ( limit :: Maybe Int
+  , value :: Maybe (Array a)
   , onValueChange :: Maybe (Array a -> i)
   | r
   )
 
 defaultValueOptions :: forall a i. Record (ValueOptions a i ())
 defaultValueOptions =
-  { value: Nothing
+  { limit: Nothing
+  , value: Nothing
   , onValueChange: Nothing
   }
 
@@ -52,7 +54,7 @@ useAccordion
   => Record (Options headingProps (TriggerProps triggerProps) (PanelProps panelProps) a p (HookM m Unit))
   -> Array (Item a p (HookM m Unit))
   -> Hook m (UseAccordion a) (HH.HTML p (HookM m Unit))
-useAccordion { renderHeading, renderTrigger, renderPanel, value: valueProp, onValueChange } items =
+useAccordion { renderHeading, renderTrigger, renderPanel, limit, value: valueProp, onValueChange } items =
   Hooks.wrap $
     Hooks.do
       selection /\ selectionId <- useState $ fromMaybe [] valueProp
@@ -66,7 +68,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, value: valueProp, onVa
               onValueChange' sel
             Nothing ->
               pure unit
-        select = handler cons
+        select = handler \x -> fromMaybe identity (take <$> limit) <<< cons x
         deselect = handler \s -> filter (_ /= s)
       Hooks.pure
         $ HH.div_

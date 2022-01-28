@@ -2,7 +2,6 @@ module Stories.Accordion where
 
 import Prelude
 
-import Data.Maybe (Maybe(Nothing))
 import Data.Tuple (Tuple(..))
 import Effect.Class (class MonadEffect)
 import Halogen (Component)
@@ -25,6 +24,7 @@ component =
       accordion <- useAccordion
         Accordion.defaultOptions
           { renderPanel = \open p -> HH.div (p <> if not open then [ HP.style "display: none;" ] else [])
+          , limit = pure 2
           }
         items
       Hooks.pure $ HH.div_ [ accordion ]
