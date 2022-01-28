@@ -24,8 +24,8 @@ type ValueOptions a i r =
 type Options headingProps triggerProps panelProps a p i =
   Record
     ( AccordionItem.RenderOptions headingProps triggerProps panelProps p i
-    + ValueOptions a i
-    + ()
+        + ValueOptions a i
+        + ()
     )
 
 type Item a p i =
@@ -63,16 +63,16 @@ useAccordion { renderHeading, renderTrigger, renderPanel, value: valueProp, onVa
         $
           items
             # mapWithIndex
-              \i (Tuple v (Tuple triggerContent panelContent)) ->
-                accordionItem
-                  AccordionItem.defaultOptions
-                    { renderHeading = renderHeading
-                    , renderTrigger = renderTrigger
-                    , renderPanel = renderPanel
-                    , open = v `elem` value
-                    , onOpenChange = Just \open -> if open then select v else deselect v
-                    }
-                  (fromMaybe "trigger" $ elementIds !! i)
-                  (fromMaybe "panel" $ elementIds !! (i + length items))
-                  triggerContent
-                  panelContent
+                \i (Tuple v (Tuple triggerContent panelContent)) ->
+                  accordionItem
+                    AccordionItem.defaultOptions
+                      { renderHeading = renderHeading
+                      , renderTrigger = renderTrigger
+                      , renderPanel = renderPanel
+                      , open = v `elem` value
+                      , onOpenChange = Just \open -> if open then select v else deselect v
+                      }
+                    (fromMaybe "trigger" $ elementIds !! i)
+                    (fromMaybe "panel" $ elementIds !! (i + length items))
+                    triggerContent
+                    panelContent

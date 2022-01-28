@@ -22,11 +22,11 @@ component =
   in
     Hooks.component \_ _ -> Hooks.do
       accordion <- useAccordion
-                     { renderHeading: HH.h4
-                     , renderTrigger: const HH.button
-                     , renderPanel: \open p -> HH.div (p <> if not open then [HP.style "display: none;"] else [])
-                     , value: Nothing
-                     , onValueChange: Nothing
-                     }
-                     items
+        { renderHeading: HH.h4
+        , renderTrigger: const HH.button
+        , renderPanel: \open p -> HH.div (p <> if not open then [ HP.style "display: none;" ] else [])
+        , value: Nothing
+        , onValueChange: Nothing
+        }
+        items
       Hooks.pure $ HH.div_ [ accordion ]
