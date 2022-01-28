@@ -2,6 +2,7 @@ module Halogen.Headless.Accordion where
 
 import Prelude
 
+import DOM.HTML.Indexed (HTMLh2, HTMLbutton, HTMLdiv)
 import Data.Array ((!!), cons, elem, filter, length, mapWithIndex)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
@@ -13,6 +14,7 @@ import Halogen.Headless.AccordionItem as AccordionItem
 import Halogen.Headless.Internal.ElementId (UseElementIds, useElementIds)
 import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseState, useState)
 import Halogen.Hooks as Hooks
+import Record as Record
 import Type.Row (type (+))
 
 type ValueOptions a i r =
@@ -21,12 +23,20 @@ type ValueOptions a i r =
   | r
   )
 
+defaultValueOptions :: forall a i. Record (ValueOptions a i ())
+defaultValueOptions =
+  { value: Nothing
+  , onValueChange: Nothing
+  }
+
 type Options headingProps triggerProps panelProps a p i =
-  Record
-    ( AccordionItem.RenderOptions headingProps triggerProps panelProps p i
-        + ValueOptions a i
-        + ()
-    )
+    AccordionItem.RenderOptions headingProps triggerProps panelProps p i
+      + ValueOptions a i
+      + ()
+
+defaultOptions :: forall a p i. Record (Options HTMLh2 HTMLbutton HTMLdiv a p i)
+defaultOptions =
+  Record.merge AccordionItem.defaultRenderOptions defaultValueOptions
 
 type Item a p i =
   Tuple a (Tuple (AccordionItem.TriggerContent p i) (AccordionItem.PanelContent p i))
@@ -39,7 +49,7 @@ useAccordion
   :: forall headingProps triggerProps panelProps a p m
    . Eq a
   => MonadEffect m
-  => Options headingProps (TriggerProps triggerProps) (PanelProps panelProps) a p (HookM m Unit)
+  => Record (Options headingProps (TriggerProps triggerProps) (PanelProps panelProps) a p (HookM m Unit))
   -> Array (Item a p (HookM m Unit))
   -> Hook m (UseAccordion a) (HH.HTML p (HookM m Unit))
 useAccordion { renderHeading, renderTrigger, renderPanel, value: valueProp, onValueChange } items =
