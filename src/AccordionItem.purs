@@ -74,23 +74,24 @@ accordionItem
   -> HH.HTML p i
 accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } triggerId panelId triggerContent panelContent =
   HH.div_
-  [ renderHeading
-    []
-    [ renderTrigger
-      ([ HP.id triggerId
-      , HPA.controls panelId
-      , HPA.expanded $ if open then "true" else "false"
-      ] <> (
-        case onOpenChange of
-          Just f -> [ HE.onClick \_ -> f $ not open ]
-          Nothing -> []
-      ))
-      triggerContent
+    [ renderHeading
+        []
+        [ renderTrigger
+            ( [ HP.id triggerId
+              , HPA.controls panelId
+              , HPA.expanded $ if open then "true" else "false"
+              ] <>
+                ( case onOpenChange of
+                    Just f -> [ HE.onClick \_ -> f $ not open ]
+                    Nothing -> []
+                )
+            )
+            triggerContent
+        ]
+    , renderPanel
+        [ HP.id panelId
+        , HPA.role "region"
+        , HPA.labelledBy triggerId
+        ]
+        panelContent
     ]
-  , renderPanel
-    [ HP.id panelId
-    , HPA.role "region"
-    , HPA.labelledBy triggerId
-    ]
-    panelContent
-  ]

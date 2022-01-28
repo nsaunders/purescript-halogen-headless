@@ -16,10 +16,11 @@ import Type.Row (type (+))
 type Options headingProps triggerProps panelProps a p i =
   Record
     ( AccordionItem.RenderOptions headingProps triggerProps panelProps p i
-    + ( items :: Array (Tuple a (Tuple (Array (HH.HTML p i)) (Array (HH.HTML p i))))
-      , value :: Maybe (Array a)
-      , onValueChange :: Maybe (Array a -> i)
-      )
+        +
+          ( items :: Array (Tuple a (Tuple (Array (HH.HTML p i)) (Array (HH.HTML p i))))
+          , value :: Maybe (Array a)
+          , onValueChange :: Maybe (Array a -> i)
+          )
     )
 
 foreign import data UseAccordion :: Type -> HookType
@@ -38,16 +39,17 @@ useAccordion { renderHeading, renderTrigger, renderPanel, items, value: valuePro
       let
         value = fromMaybe selection valueProp
         handler f s = do
-                        sel <- Hooks.modify selectionId $ f s
-                        case onValueChange of
-                          Just onValueChange' ->
-                            onValueChange' sel
-                          Nothing ->
-                            pure unit
+          sel <- Hooks.modify selectionId $ f s
+          case onValueChange of
+            Just onValueChange' ->
+              onValueChange' sel
+            Nothing ->
+              pure unit
         select = handler cons
         deselect = handler \s -> filter (_ /= s)
-      Hooks.pure $
-        HH.div_ $
+      Hooks.pure
+        $ HH.div_
+        $
           items <#>
             \(Tuple v (Tuple triggerContent panelContent)) ->
               accordionItem

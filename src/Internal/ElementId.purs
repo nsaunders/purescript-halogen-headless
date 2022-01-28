@@ -19,4 +19,4 @@ useElementId :: forall m. MonadEffect m => Hook m UseElementId String
 useElementId = Hooks.wrap $ Hooks.do
   value /\ valueId <- useState ""
   useLifecycleEffect $ ((liftEffect elementId) >>= Hooks.put valueId) *> pure Nothing
-  Hooks.pure value 
+  Hooks.pure value
