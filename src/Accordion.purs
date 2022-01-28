@@ -3,7 +3,7 @@ module Halogen.Headless.Accordion where
 import Prelude
 
 import Data.Array ((!!), cons, elem, filter, length, mapWithIndex)
-import Data.Maybe (Maybe(..), fromJust, fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Class (class MonadEffect)
