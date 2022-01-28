@@ -18,10 +18,12 @@ type PanelProps r = (id :: String | r)
 
 type Render a p i = Array (HP.IProp a i) -> Array (HH.HTML p i) -> HH.HTML p i
 
+type Open = Boolean
+
 type RenderOptions headingProps triggerProps panelProps p i r =
   ( renderHeading :: Render headingProps p i
-  , renderTrigger :: Render triggerProps p i
-  , renderPanel :: Render panelProps p i
+  , renderTrigger :: Open -> Render triggerProps p i
+  , renderPanel :: Open -> Render panelProps p i
   | r
   )
 
@@ -30,13 +32,13 @@ defaultRenderOptions
    . Record (RenderOptions HTMLh2 HTMLbutton HTMLdiv p i ())
 defaultRenderOptions =
   { renderHeading: HH.h2
-  , renderTrigger: HH.button
-  , renderPanel: HH.div
+  , renderTrigger: const HH.button
+  , renderPanel: const HH.div
   }
 
 type OpenOptions i r =
-  ( open :: Boolean
-  , onOpenChange :: Maybe (Boolean -> i)
+  ( open :: Open
+  , onOpenChange :: Maybe (Open -> i)
   | r
   )
 
@@ -77,6 +79,7 @@ accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } 
     [ renderHeading
         []
         [ renderTrigger
+            open
             ( [ HP.id triggerId
               , HPA.controls panelId
               , HPA.expanded $ if open then "true" else "false"
@@ -89,6 +92,7 @@ accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } 
             triggerContent
         ]
     , renderPanel
+        open
         [ HP.id panelId
         , HPA.role "region"
         , HPA.labelledBy triggerId

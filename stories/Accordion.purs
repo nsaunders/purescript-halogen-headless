@@ -1,11 +1,13 @@
 module Stories.Accordion where
 
 import Prelude
+
 import Data.Maybe (Maybe(Nothing))
 import Data.Tuple (Tuple(..))
 import Effect.Class (class MonadEffect)
 import Halogen (Component)
 import Halogen.HTML as HH
+import Halogen.HTML.Properties as HP
 import Halogen.Headless.Accordion (useAccordion)
 import Halogen.Hooks as Hooks
 
@@ -21,8 +23,8 @@ component =
     Hooks.component \_ _ -> Hooks.do
       accordion <- useAccordion
                      { renderHeading: HH.h4
-                     , renderTrigger: HH.button
-                     , renderPanel: HH.div
+                     , renderTrigger: const HH.button
+                     , renderPanel: \open p -> HH.div (p <> if not open then [HP.style "display: none;"] else [])
                      , value: Nothing
                      , onValueChange: Nothing
                      }
