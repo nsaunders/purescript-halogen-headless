@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "postinstall": "spago install",
     "format": "purs-tidy format-in-place stories/**/*.purs src/**/*.purs test/**/*.purs",
     "storybook": "copyfiles -u 1 stories/index.html stories/styles.css ./public && spago bundle-app -m Stories.Main -p stories/**/*.purs --to ./public/app.js"
   },
