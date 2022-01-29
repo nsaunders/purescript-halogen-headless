@@ -10720,6 +10720,7 @@ var PS = {};
   var exports = $PS["Stories.Accordion"];
   var Control_Applicative = $PS["Control.Applicative"];
   var Data_Eq = $PS["Data.Eq"];
+  var Data_Functor = $PS["Data.Functor"];
   var Data_Maybe = $PS["Data.Maybe"];
   var Data_Semigroup = $PS["Data.Semigroup"];
   var Data_Tuple = $PS["Data.Tuple"];
@@ -10730,7 +10731,9 @@ var PS = {};
   var Halogen_Hooks_Component = $PS["Halogen.Hooks.Component"];
   var Halogen_Hooks_Hook = $PS["Halogen.Hooks.Hook"];                
   var component = function (dictMonadEffect) {
-      var items = [ Data_Tuple.Tuple.create(1)(new Data_Tuple.Tuple([ Halogen_HTML_Core.text("Summary 1") ], [ Halogen_HTML_Core.text("Details 1") ])), Data_Tuple.Tuple.create(2)(new Data_Tuple.Tuple([ Halogen_HTML_Core.text("Summary 2") ], [ Halogen_HTML_Core.text("Details 2") ])), Data_Tuple.Tuple.create(3)(new Data_Tuple.Tuple([ Halogen_HTML_Core.text("Summary 3") ], [ Halogen_HTML_Core.text("Details 3") ])) ];
+      var items = Data_Functor.mapFlipped(Data_Functor.functorArray)([ new Data_Tuple.Tuple(1, new Data_Tuple.Tuple("What is a headless component?", "\x0a        A headless component addresses concerns like state, accessibility, and\x0a        keyboard support while allowing you to focus on implementing your own\x0a        visual design.\x0a        ")), new Data_Tuple.Tuple(2, new Data_Tuple.Tuple("Is the Accordion component accessible?", "\x0a        The Accordion component implements the WAI-ARIA Accordion Design Pattern\x0a        which provides an accessible markup structure to support screen reader\x0a        and keyboard users.\x0a        ")), new Data_Tuple.Tuple(3, new Data_Tuple.Tuple("How can I customize the Accordion component?", "\x0a        The Accordion component provides minimalistic default HTML. You can\x0a        provide your own functions to render the desired heading, trigger, and\x0a        panel markup.\x0a        ")) ])(function (v) {
+          return new Data_Tuple.Tuple(v.value0, new Data_Tuple.Tuple([ Halogen_HTML_Core.text(v.value1.value0) ], [ Halogen_HTML_Core.text(v.value1.value1) ]));
+      });
       return Halogen_Hooks_Component.component(function (v) {
           return function (v1) {
               return Halogen_Hooks_Hook.bind(Halogen_Headless_Accordion.useAccordion(Data_Eq.eqInt)(dictMonadEffect)({
@@ -10739,8 +10742,8 @@ var PS = {};
                   renderPanel: function (open) {
                       return function (p) {
                           return Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)(p)((function () {
-                              var $4 = !open;
-                              if ($4) {
+                              var $10 = !open;
+                              if ($10) {
                                   return [ Halogen_HTML_Properties.style("display: none;") ];
                               };
                               return [  ];
