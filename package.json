@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "scripts": {
+    "storybook": "copyfiles -u 1 stories/index.html stories/styles.css ./public && spago bundle-app -p stories/**/*.purs --to ./public/app.js"
+  },
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "purescript": "^0.14.5",
+    "purs-tidy": "^0.7.0",
+    "spago": "^0.20.3"
+  }
+}
