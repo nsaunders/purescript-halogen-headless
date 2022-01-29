@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "storybook": "copyfiles -u 1 stories/index.html stories/styles.css ./public && spago bundle-app -p stories/**/*.purs --to ./public/app.js"
+    "storybook": "copyfiles -u 1 stories/index.html stories/styles.css ./public && spago bundle-app -m Stories.Main -p stories/**/*.purs --to ./public/app.js"
   },
   "devDependencies": {
     "copyfiles": "^2.4.1",

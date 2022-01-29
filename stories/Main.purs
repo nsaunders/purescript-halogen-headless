@@ -1,29 +1,30 @@
-module Main where
+module Stories.Main where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Class (class MonadEffect)
-import Foreign.Object (fromFoldable) as Object
-import Halogen.Aff (awaitBody, runHalogenAff)
+import Foreign.Object as Object
+import Halogen.Aff as HA
 import Halogen.HTML as HH
-import Halogen.Storybook (Stories, runStorybook, proxy)
-import Stories.Accordion (component) as Accordion
-import Stories.AccordionItem (component) as AccordionItem
-import Stories.Index (component) as Index
+import Halogen.Storybook (Stories, runStorybook)
+import Stories.Accordion as Accordion
+import Stories.AccordionItem as AccordionItem
+import Stories.Index as Index
 
 stories :: forall m. MonadEffect m => Stories m
-stories = Object.fromFoldable
-  [ "" /\ proxy Index.component
-  , "Accordion" /\ proxy Accordion.component
-  , "AccordionItem" /\ proxy AccordionItem.component
-  ]
+stories =
+  Object.fromFoldable
+    [ "" /\ Index.component
+    , "Accordion" /\ Accordion.component
+    , "AccordionItem" /\ AccordionItem.component
+    ]
 
 main :: Effect Unit
-main = runHalogenAff $
-  awaitBody >>=
-    runStorybook
-      { stories
-      , logo: pure (HH.text "Halogen Headless")
-      }
+main = HA.runHalogenAff $
+  HA.awaitBody >>= runStorybook
+    { stories
+    , logo: Just $ HH.text "Halogen Headless"
+    }
