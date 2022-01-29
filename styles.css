@@ -1,20 +1,20 @@
 body {
   margin: 0;
-  font-family: sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .Storybook {
   height: 100vh;
   display: grid;
   grid-template-areas:
-    "logo main"
-    "nav main";
+    "l m"
+    "n m";
   grid-template-columns: 20rem 1fr;
   grid-template-rows: 4rem 1fr;
 }
 
 .Storybook-logo {
-  grid-area: logo;
+  grid-area: l;
   display: flex;
   align-items: center;
   padding-left: 2rem;
@@ -26,7 +26,7 @@ body {
 }
 
 .Storybook-nav {
-  grid-area: nav;
+  grid-area: n;
   overflow-y: auto;
   font-size: 0.875rem;
   background-color: #fafafa;
@@ -64,7 +64,7 @@ body {
 }
 
 .Storybook-main {
-  grid-area: main;
+  grid-area: m;
   padding: 2rem;
   overflow: auto;
 }
