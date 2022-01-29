@@ -1,12 +1,13 @@
 {
   "private": true,
   "scripts": {
-    "postinstall": "spago install",
     "format": "purs-tidy format-in-place stories/**/*.purs src/**/*.purs test/**/*.purs",
-    "storybook": "copyfiles -u 1 stories/index.html stories/styles.css ./public && spago bundle-app -m Stories.Main -p stories/**/*.purs --to ./public/app.js"
+    "postinstall": "spago install",
+    "server": "live-server ./public",
+    "storybook": "spago bundle-app -m Stories.Main -p stories/**/*.purs --to ./public/app.js"
   },
   "devDependencies": {
-    "copyfiles": "^2.4.1",
+    "live-server": "^1.2.1",
     "purescript": "^0.14.5",
     "purs-tidy": "^0.7.0",
     "spago": "^0.20.3"
