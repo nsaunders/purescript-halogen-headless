@@ -5,8 +5,7 @@ import Prelude
 import DOM.HTML.Indexed (HTMLh2, HTMLbutton, HTMLdiv)
 import Data.Array (cons, elem, filter, head, length, mapWithIndex, singleton, take, (!!))
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Tuple (Tuple(..))
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -93,7 +92,7 @@ defaultOptions mode =
   Record.merge defaultRenderOptions $ Record.merge { mode } $ defaultValueOptions mode
 
 type Item a p i =
-  Tuple a (Tuple (TriggerContent p i) (PanelContent p i))
+  a /\ (TriggerContent p i) /\ (PanelContent p i)
 
 foreign import data UseAccordion :: Type -> HookType
 
@@ -128,7 +127,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
         $
           items
             # mapWithIndex
-                \i (Tuple v (Tuple triggerContent panelContent)) ->
+                \i (v /\ triggerContent /\ panelContent) ->
                   accordionItem
                     { renderHeading: renderHeading
                     , renderTrigger: renderTrigger

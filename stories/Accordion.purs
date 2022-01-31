@@ -10,7 +10,6 @@ import Foreign.Object (insert)
 import Foreign.Object as Object
 import Halogen (Component)
 import Halogen.HTML as HH
-import Halogen.HTML.Properties as HP
 import Halogen.Headless.Accordion (useAccordion)
 import Halogen.Headless.Accordion as Accordion
 import Halogen.Hooks (useState)
