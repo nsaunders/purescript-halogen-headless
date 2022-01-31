@@ -1,7 +1,6 @@
 module Stories.Main where
 
 import Prelude
-
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
@@ -18,12 +17,9 @@ stories :: forall m. MonadEffect m => Stories m
 stories =
   Object.fromFoldable
     [ "" /\ Index.component
-    , "Accordion|Single/Uncontrolled" /\ Accordion.singleUncontrolled
-    , "Accordion|Single/Controlled" /\ Accordion.singleControlled
-    , "Accordion|Multiple/Uncontrolled" /\ Accordion.multipleUncontrolled
-    , "Accordion|Multiple/Controlled" /\ Accordion.multipleControlled
     , "AccordionItem" /\ AccordionItem.component
     ]
+    # Object.union Accordion.stories
 
 main :: Effect Unit
 main = HA.runHalogenAff $

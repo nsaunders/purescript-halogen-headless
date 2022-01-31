@@ -1,10 +1,13 @@
 module Stories.Accordion where
 
 import Prelude
+
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect)
+import Foreign.Object (insert)
+import Foreign.Object as Object
 import Halogen (Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -12,6 +15,14 @@ import Halogen.Headless.Accordion (useAccordion)
 import Halogen.Headless.Accordion as Accordion
 import Halogen.Hooks (useState)
 import Halogen.Hooks as Hooks
+import Halogen.Storybook (Stories)
+
+stories :: forall m. MonadEffect m => Stories m
+stories = Object.empty
+  # insert "Accordion|Single" singleUncontrolled
+  # insert "Accordion|Single (Controlled)" singleControlled
+  # insert "Accordion|Multiple" multipleUncontrolled
+  # insert "Accordion|Multiple (Controlled)" multipleControlled
 
 items :: forall p i. Array (Int /\ (Array (HH.HTML p i) /\ Array (HH.HTML p i)))
 items =
@@ -46,11 +57,7 @@ items =
 singleUncontrolled :: forall q i o m. MonadEffect m => Component q i o m
 singleUncontrolled =
   Hooks.component \_ _ ->
-    useAccordion
-      (Accordion.defaultOptions Accordion.Single)
-        { renderPanel = \open p -> HH.div (p <> if not open then [ HP.style "display: none;" ] else [])
-        }
-      items
+    useAccordion (Accordion.defaultOptions Accordion.Single) items
 
 singleControlled :: forall q i o m. MonadEffect m => Component q i o m
 singleControlled =
@@ -58,8 +65,7 @@ singleControlled =
     value /\ valueId <- useState Nothing
     accordion <- useAccordion
       (Accordion.defaultOptions Accordion.Single)
-        { renderPanel = \open p -> HH.div (p <> if not open then [ HP.style "display: none;" ] else [])
-        , value = Just value
+        { value = Just value
         , onValueChange = Just $ Hooks.put valueId
         }
       items
@@ -75,11 +81,7 @@ singleControlled =
 multipleUncontrolled :: forall q i o m. MonadEffect m => Component q i o m
 multipleUncontrolled =
   Hooks.component \_ _ ->
-    useAccordion
-      (Accordion.defaultOptions Accordion.Multiple)
-        { renderPanel = \open p -> HH.div (p <> if not open then [ HP.style "display: none;" ] else [])
-        }
-      items
+    useAccordion (Accordion.defaultOptions Accordion.Multiple) items
 
 multipleControlled :: forall q i o m. MonadEffect m => Component q i o m
 multipleControlled =
@@ -87,8 +89,7 @@ multipleControlled =
     value /\ valueId <- useState []
     accordion <- useAccordion
       (Accordion.defaultOptions Accordion.Multiple)
-        { renderPanel = \open p -> HH.div (p <> if not open then [ HP.style "display: none;" ] else [])
-        , value = Just value
+        { value = Just value
         , onValueChange = Just $ Hooks.put valueId
         }
       items

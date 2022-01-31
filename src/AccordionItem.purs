@@ -33,7 +33,7 @@ defaultRenderOptions
 defaultRenderOptions =
   { renderHeading: HH.h2
   , renderTrigger: const HH.button
-  , renderPanel: const HH.div
+  , renderPanel: \open p -> HH.div (p <> if open then [] else [HP.style "display:none"])
   }
 
 type OpenOptions i r =
