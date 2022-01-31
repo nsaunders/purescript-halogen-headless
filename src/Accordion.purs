@@ -17,6 +17,13 @@ import Halogen.Hooks as Hooks
 import Record as Record
 import Type.Row (type (+))
 
+type ValueOptions mode f a i r =
+  ( mode :: mode
+  , value :: Maybe (f a)
+  , onValueChange :: Maybe (f a -> i)
+  | r
+  )
+
 data Single = Single
 
 data Multiple = Multiple
@@ -25,39 +32,40 @@ class SelectionMode mode f | mode -> f where
   selectionLimit :: mode -> Maybe Int
   selectionFromArray :: forall a. mode -> Array a -> f a
   selectionToArray :: forall a. mode -> f a -> Array a
+  defaultValueOptions :: forall a i. mode -> Record (ValueOptions mode f a i ())
 
 instance SelectionMode Single Maybe where
   selectionLimit _ = Just 1
   selectionFromArray _ = head
   selectionToArray _ = fromMaybe [] <<< map singleton
+  defaultValueOptions mode =
+    { mode
+    , value: Nothing
+    , onValueChange: Nothing
+    }
 
 instance SelectionMode Multiple Array where
   selectionLimit _ = Nothing
   selectionFromArray _ = identity
   selectionToArray _ = identity
-
-type ValueOptions mode f a i r =
-  ( mode :: mode
-  , value :: Maybe (f a)
-  , onValueChange :: Maybe (f a -> i)
-  | r
-  )
-
-defaultValueOptions :: forall a i. Record (ValueOptions Single Maybe a i ())
-defaultValueOptions =
-  { mode: Single
-  , value: Nothing
-  , onValueChange: Nothing
-  }
+  defaultValueOptions mode =
+    { mode
+    , value: Nothing
+    , onValueChange: Nothing
+    }
 
 type Options headingProps triggerProps panelProps a p i mode f =
     AccordionItem.RenderOptions headingProps triggerProps panelProps p i
       + ValueOptions mode f a i
       + ()
 
-defaultOptions :: forall a p i. Record (Options HTMLh2 HTMLbutton HTMLdiv a p i Single Maybe)
+defaultOptions
+  :: forall mode f a p i
+   . SelectionMode mode f
+  => mode
+  -> Record (Options HTMLh2 HTMLbutton HTMLdiv a p i mode f)
 defaultOptions =
-  Record.merge AccordionItem.defaultRenderOptions defaultValueOptions
+  Record.merge AccordionItem.defaultRenderOptions <<< defaultValueOptions
 
 type Item a p i =
   Tuple a (Tuple (AccordionItem.TriggerContent p i) (AccordionItem.PanelContent p i))
