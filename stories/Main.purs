@@ -18,7 +18,10 @@ stories :: forall m. MonadEffect m => Stories m
 stories =
   Object.fromFoldable
     [ "" /\ Index.component
-    , "Accordion" /\ Accordion.component
+    , "Accordion|Single/Uncontrolled" /\ Accordion.singleUncontrolled
+    , "Accordion|Single/Controlled" /\ Accordion.singleControlled
+    , "Accordion|Multiple/Uncontrolled" /\ Accordion.multipleUncontrolled
+    , "Accordion|Multiple/Controlled" /\ Accordion.multipleControlled
     , "AccordionItem" /\ AccordionItem.component
     ]
 
