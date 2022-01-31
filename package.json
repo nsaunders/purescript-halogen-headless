@@ -3,7 +3,7 @@
   "scripts": {
     "format": "purs-tidy format-in-place stories/**/*.purs src/**/*.purs test/**/*.purs",
     "postinstall": "spago install",
-    "server": "live-server ./public",
+    "server": "live-server --no-browser ./public",
     "storybook": "spago bundle-app -m Stories.Main -p stories/**/*.purs --to ./public/app.js"
   },
   "devDependencies": {
