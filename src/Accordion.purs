@@ -1,4 +1,4 @@
-module Halogen.Headless.Accordion where
+module Halogen.Headless.Accordion (class SelectionMode, Single(..), Multiple(..), UseAccordion, defaultOptions, defaultValueOptions, selectionLimit, selectionFromArray, selectionToArray, useAccordion) where
 
 import Prelude
 
@@ -9,13 +9,39 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Class (class MonadEffect)
 import Halogen.HTML as HH
-import Halogen.Headless.AccordionItem (PanelProps, TriggerProps, accordionItem)
-import Halogen.Headless.AccordionItem as AccordionItem
+import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Headless.Internal.ElementId (UseElementIds, useElementIds)
 import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseState, useState)
 import Halogen.Hooks as Hooks
 import Record as Record
 import Type.Row (type (+))
+import Web.UIEvent.MouseEvent (MouseEvent)
+
+type TriggerProps r = (id :: String, onClick :: MouseEvent | r)
+
+type PanelProps r = (id :: String | r)
+
+type Render a p i = Array (HP.IProp a i) -> Array (HH.HTML p i) -> HH.HTML p i
+
+type Open = Boolean
+
+type RenderOptions headingProps triggerProps panelProps p i r =
+  ( renderHeading :: Render headingProps p i
+  , renderTrigger :: Open -> Render triggerProps p i
+  , renderPanel :: Open -> Render panelProps p i
+  | r
+  )
+
+defaultRenderOptions
+  :: forall p i
+   . Record (RenderOptions HTMLh2 HTMLbutton HTMLdiv p i ())
+defaultRenderOptions =
+  { renderHeading: HH.h2
+  , renderTrigger: const HH.button
+  , renderPanel: \open p -> HH.div (p <> if open then [] else [HP.style "display:none"])
+  }
 
 type ValueOptions :: forall k. (k -> Type) -> k -> Type -> Row Type -> Row Type
 type ValueOptions f a i r =
@@ -54,7 +80,7 @@ instance SelectionMode Multiple Array where
 
 type Options :: forall k. Row Type -> Row Type -> Row Type -> k -> Type -> Type -> Type -> (k -> Type) -> Row Type
 type Options headingProps triggerProps panelProps a p i mode f =
-    AccordionItem.RenderOptions headingProps triggerProps panelProps p i
+    RenderOptions headingProps triggerProps panelProps p i
       + ValueOptions f a i
       + (mode :: mode)
 
@@ -64,10 +90,10 @@ defaultOptions
   => mode
   -> Record (Options HTMLh2 HTMLbutton HTMLdiv a p i mode f)
 defaultOptions mode =
-  Record.merge AccordionItem.defaultRenderOptions $ Record.merge { mode } $ defaultValueOptions mode
+  Record.merge defaultRenderOptions $ Record.merge { mode } $ defaultValueOptions mode
 
 type Item a p i =
-  Tuple a (Tuple (AccordionItem.TriggerContent p i) (AccordionItem.PanelContent p i))
+  Tuple a (Tuple (TriggerContent p i) (PanelContent p i))
 
 foreign import data UseAccordion :: Type -> HookType
 
@@ -104,14 +130,60 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
             # mapWithIndex
                 \i (Tuple v (Tuple triggerContent panelContent)) ->
                   accordionItem
-                    AccordionItem.defaultOptions
-                      { renderHeading = renderHeading
-                      , renderTrigger = renderTrigger
-                      , renderPanel = renderPanel
-                      , open = v `elem` value
-                      , onOpenChange = Just \open -> if open then select v else deselect v
-                      }
+                    { renderHeading: renderHeading
+                    , renderTrigger: renderTrigger
+                    , renderPanel: renderPanel
+                    , open: v `elem` value
+                    , onOpenChange: \open -> if open then select v else deselect v
+                    }
                     (fromMaybe "trigger" $ elementIds !! i)
                     (fromMaybe "panel" $ elementIds !! (i + length items))
                     triggerContent
                     panelContent
+
+type TriggerId = String
+
+type PanelId = String
+
+type Content p i = Array (HH.HTML p i)
+
+type TriggerContent p i = Content p i
+
+type PanelContent p i = Content p i
+
+accordionItem
+  :: forall headingProps triggerProps panelProps p i
+   . Record
+     (
+       RenderOptions headingProps (TriggerProps triggerProps) (PanelProps panelProps) p i
+       + ( open :: Boolean
+         , onOpenChange :: Open -> i
+         )
+     )
+  -> TriggerId
+  -> PanelId
+  -> TriggerContent p i
+  -> PanelContent p i
+  -> HH.HTML p i
+accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } triggerId panelId triggerContent panelContent =
+  HH.div_
+    [ renderHeading
+        []
+        [ renderTrigger
+            open
+            ( [ HP.id triggerId
+              , HPA.controls panelId
+              , HPA.expanded $ if open then "true" else "false"
+              , HE.onClick \_ -> onOpenChange $ not open 
+              ]
+            )
+            triggerContent
+        ]
+    , renderPanel
+        open
+        [ HP.id panelId
+        , HPA.role "region"
+        , HPA.labelledBy triggerId
+        ]
+        panelContent
+    ]
