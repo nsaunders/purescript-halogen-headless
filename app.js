@@ -510,12 +510,6 @@ var PS = {};
           return applyMaybe;
       }
   };
-  var applicativeMaybe = {
-      pure: Just.create,
-      Apply0: function () {
-          return applyMaybe;
-      }
-  };
   exports["Nothing"] = Nothing;
   exports["Just"] = Just;
   exports["maybe"] = maybe;
@@ -524,7 +518,6 @@ var PS = {};
   exports["isNothing"] = isNothing;
   exports["fromJust"] = fromJust;
   exports["functorMaybe"] = functorMaybe;
-  exports["applicativeMaybe"] = applicativeMaybe;
   exports["bindMaybe"] = bindMaybe;
 })(PS);
 (function($PS) {
@@ -8960,69 +8953,110 @@ var PS = {};
   var Halogen_Hooks = $PS["Halogen.Hooks"];
   var Halogen_Hooks_Hook = $PS["Halogen.Hooks.Hook"];
   var Halogen_Hooks_HookM = $PS["Halogen.Hooks.HookM"];
-  var Record = $PS["Record"];        
+  var Record = $PS["Record"];
+  var Multiple = (function () {
+      function Multiple() {
+
+      };
+      Multiple.value = new Multiple();
+      return Multiple;
+  })();
+  var selectionModeMultipleArra = {
+      selectionLimit: function (v) {
+          return Data_Maybe.Nothing.value;
+      },
+      selectionFromArray: function (v) {
+          return Control_Category.identity(Control_Category.categoryFn);
+      },
+      selectionToArray: function (v) {
+          return Control_Category.identity(Control_Category.categoryFn);
+      },
+      defaultValueOptions: function (v) {
+          return {
+              value: Data_Maybe.Nothing.value,
+              onValueChange: Data_Maybe.Nothing.value
+          };
+      }
+  };                                 
+  var selectionToArray = function (dict) {
+      return dict.selectionToArray;
+  };
+  var selectionLimit = function (dict) {
+      return dict.selectionLimit;
+  };
+  var selectionFromArray = function (dict) {
+      return dict.selectionFromArray;
+  };
   var useAccordion = function (dictEq) {
       return function (dictMonadEffect) {
-          return function (v) {
-              return function (items) {
-                  return Halogen_Hooks.wrap()(Halogen_Hooks_Hook.bind(Halogen_Hooks.useState(Data_Maybe.fromMaybe([  ])(v.value)))(function (v1) {
-                      return Halogen_Hooks_Hook.bind(Halogen_Headless_Internal_ElementId.useElementIds(dictMonadEffect)(Data_Array.length(items) * 2 | 0))(function (elementIds) {
-                          var value = Data_Maybe.fromMaybe(v1.value0)(v.value);
-                          var handler = function (f) {
-                              return function (s) {
-                                  return Control_Bind.bind(Halogen_Hooks_HookM.bindHookM)(Halogen_Hooks_HookM.modify(v1.value1)(f(s)))(function (sel) {
-                                      if (v.onValueChange instanceof Data_Maybe.Just) {
-                                          return v.onValueChange.value0(sel);
-                                      };
-                                      if (v.onValueChange instanceof Data_Maybe.Nothing) {
-                                          return Control_Applicative.pure(Halogen_Hooks_HookM.applicativeHookM)(Data_Unit.unit);
-                                      };
-                                      throw new Error("Failed pattern match at Halogen.Headless.Accordion (line 66, column 11 - line 70, column 24): " + [ v.onValueChange.constructor.name ]);
-                                  });
-                              };
-                          };
-                          var select = handler(function (x) {
-                              var $27 = Data_Maybe.fromMaybe(Control_Category.identity(Control_Category.categoryFn))(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.take)(v.limit));
-                              var $28 = Data_Array.cons(x);
-                              return function ($29) {
-                                  return $27($28($29));
-                              };
-                          });
-                          var deselect = handler(function (s) {
-                              return Data_Array.filter(function (v2) {
-                                  return Data_Eq.notEq(dictEq)(v2)(s);
-                              });
-                          });
-                          return Halogen_Hooks_Hook.pure(Halogen_HTML_Elements.div_(Data_Array.mapWithIndex(function (i) {
-                              return function (v2) {
-                                  return Halogen_Headless_AccordionItem.accordionItem({
-                                      renderHeading: v.renderHeading,
-                                      renderTrigger: v.renderTrigger,
-                                      renderPanel: v.renderPanel,
-                                      open: Data_Array.elem(dictEq)(v2.value0)(value),
-                                      onOpenChange: new Data_Maybe.Just(function (open) {
-                                          if (open) {
-                                              return select(v2.value0);
+          return function (dictSelectionMode) {
+              return function (v) {
+                  return function (items) {
+                      return Halogen_Hooks.wrap()(Halogen_Hooks_Hook.bind(Halogen_Hooks.useState(Data_Maybe.fromMaybe([  ])(Data_Functor.map(Data_Maybe.functorMaybe)(selectionToArray(dictSelectionMode)(v.mode))(v.value))))(function (v1) {
+                          return Halogen_Hooks_Hook.bind(Halogen_Headless_Internal_ElementId.useElementIds(dictMonadEffect)(Data_Array.length(items) * 2 | 0))(function (elementIds) {
+                              var value = Data_Maybe.fromMaybe(v1.value0)(Data_Functor.map(Data_Maybe.functorMaybe)(selectionToArray(dictSelectionMode)(v.mode))(v.value));
+                              var handler = function (f) {
+                                  return function (s) {
+                                      return Control_Bind.bind(Halogen_Hooks_HookM.bindHookM)(Halogen_Hooks_HookM.modify(v1.value1)(f(s)))(function (sel) {
+                                          if (v.onValueChange instanceof Data_Maybe.Just) {
+                                              return v.onValueChange.value0(selectionFromArray(dictSelectionMode)(v.mode)(sel));
                                           };
-                                          return deselect(v2.value0);
-                                      })
-                                  })(Data_Maybe.fromMaybe("trigger")(Data_Array.index(elementIds)(i)))(Data_Maybe.fromMaybe("panel")(Data_Array.index(elementIds)(i + Data_Array.length(items) | 0)))(v2.value1.value0)(v2.value1.value1);
+                                          if (v.onValueChange instanceof Data_Maybe.Nothing) {
+                                              return Control_Applicative.pure(Halogen_Hooks_HookM.applicativeHookM)(Data_Unit.unit);
+                                          };
+                                          throw new Error("Failed pattern match at Halogen.Headless.Accordion (line 93, column 11 - line 97, column 24): " + [ v.onValueChange.constructor.name ]);
+                                      });
+                                  };
                               };
-                          })(items)));
-                      });
-                  }));
+                              var select = handler(function (x) {
+                                  var $46 = Data_Maybe.fromMaybe(Control_Category.identity(Control_Category.categoryFn))(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.take)(selectionLimit(dictSelectionMode)(v.mode)));
+                                  var $47 = Data_Array.cons(x);
+                                  return function ($48) {
+                                      return $46($47($48));
+                                  };
+                              });
+                              var deselect = handler(function (s) {
+                                  return Data_Array.filter(function (v2) {
+                                      return Data_Eq.notEq(dictEq)(v2)(s);
+                                  });
+                              });
+                              return Halogen_Hooks_Hook.pure(Halogen_HTML_Elements.div_(Data_Array.mapWithIndex(function (i) {
+                                  return function (v2) {
+                                      return Halogen_Headless_AccordionItem.accordionItem({
+                                          renderHeading: v.renderHeading,
+                                          renderTrigger: v.renderTrigger,
+                                          renderPanel: v.renderPanel,
+                                          open: Data_Array.elem(dictEq)(v2.value0)(value),
+                                          onOpenChange: new Data_Maybe.Just(function (open) {
+                                              if (open) {
+                                                  return select(v2.value0);
+                                              };
+                                              return deselect(v2.value0);
+                                          })
+                                      })(Data_Maybe.fromMaybe("trigger")(Data_Array.index(elementIds)(i)))(Data_Maybe.fromMaybe("panel")(Data_Array.index(elementIds)(i + Data_Array.length(items) | 0)))(v2.value1.value0)(v2.value1.value1);
+                                  };
+                              })(items)));
+                          });
+                      }));
+                  };
               };
           };
       };
   };
-  var defaultValueOptions = {
-      limit: Data_Maybe.Nothing.value,
-      value: Data_Maybe.Nothing.value,
-      onValueChange: Data_Maybe.Nothing.value
+  var defaultValueOptions = function (dict) {
+      return dict.defaultValueOptions;
   };
-  var defaultOptions = Record.merge()()(Halogen_Headless_AccordionItem.defaultRenderOptions)(defaultValueOptions);
+  var defaultOptions = function (dictSelectionMode) {
+      return function (mode) {
+          return Record.merge()()(Halogen_Headless_AccordionItem.defaultRenderOptions)(Record.merge()()({
+              mode: mode
+          })(defaultValueOptions(dictSelectionMode)(mode)));
+      };
+  };
+  exports["Multiple"] = Multiple;
   exports["defaultOptions"] = defaultOptions;
   exports["useAccordion"] = useAccordion;
+  exports["selectionModeMultipleArra"] = selectionModeMultipleArra;
 })(PS);
 (function($PS) {
   // Generated by purs version 0.14.5
@@ -10718,10 +10752,8 @@ var PS = {};
   "use strict";
   $PS["Stories.Accordion"] = $PS["Stories.Accordion"] || {};
   var exports = $PS["Stories.Accordion"];
-  var Control_Applicative = $PS["Control.Applicative"];
   var Data_Eq = $PS["Data.Eq"];
   var Data_Functor = $PS["Data.Functor"];
-  var Data_Maybe = $PS["Data.Maybe"];
   var Data_Semigroup = $PS["Data.Semigroup"];
   var Data_Tuple = $PS["Data.Tuple"];
   var Halogen_HTML_Core = $PS["Halogen.HTML.Core"];
@@ -10736,24 +10768,27 @@ var PS = {};
       });
       return Halogen_Hooks_Component.component(function (v) {
           return function (v1) {
-              return Halogen_Hooks_Hook.bind(Halogen_Headless_Accordion.useAccordion(Data_Eq.eqInt)(dictMonadEffect)({
-                  renderHeading: Halogen_Headless_Accordion.defaultOptions.renderHeading,
-                  renderTrigger: Halogen_Headless_Accordion.defaultOptions.renderTrigger,
-                  renderPanel: function (open) {
-                      return function (p) {
-                          return Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)(p)((function () {
-                              var $10 = !open;
-                              if ($10) {
-                                  return [ Halogen_HTML_Properties.style("display: none;") ];
-                              };
-                              return [  ];
-                          })()));
-                      };
-                  },
-                  limit: Control_Applicative.pure(Data_Maybe.applicativeMaybe)(2),
-                  value: Halogen_Headless_Accordion.defaultOptions.value,
-                  onValueChange: Halogen_Headless_Accordion.defaultOptions.onValueChange
-              })(items))(function (accordion) {
+              return Halogen_Hooks_Hook.bind(Halogen_Headless_Accordion.useAccordion(Data_Eq.eqInt)(dictMonadEffect)(Halogen_Headless_Accordion.selectionModeMultipleArra)((function () {
+                  var v2 = Halogen_Headless_Accordion.defaultOptions(Halogen_Headless_Accordion.selectionModeMultipleArra)(Halogen_Headless_Accordion.Multiple.value);
+                  return {
+                      renderHeading: v2.renderHeading,
+                      renderTrigger: v2.renderTrigger,
+                      renderPanel: function (open) {
+                          return function (p) {
+                              return Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)(p)((function () {
+                                  var $10 = !open;
+                                  if ($10) {
+                                      return [ Halogen_HTML_Properties.style("display: none;") ];
+                                  };
+                                  return [  ];
+                              })()));
+                          };
+                      },
+                      value: v2.value,
+                      onValueChange: v2.onValueChange,
+                      mode: v2.mode
+                  };
+              })())(items))(function (accordion) {
                   return Halogen_Hooks_Hook.pure(Halogen_HTML_Elements.div_([ accordion ]));
               });
           };
