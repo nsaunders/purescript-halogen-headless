@@ -103,6 +103,10 @@ defaultOptions
 defaultOptions mode =
   Record.merge defaultRenderOptions $ Record.merge { mode } $ defaultValueOptions mode
 
+type TriggerContent p i = HH.HTML p i
+
+type PanelContent p i = HH.HTML p i
+
 type Item a p i =
   a /\ (TriggerContent p i) /\ (PanelContent p i)
 
@@ -183,12 +187,6 @@ type TriggerId = String
 
 type PanelId = String
 
-type Content p i = Array (HH.HTML p i)
-
-type TriggerContent p i = Content p i
-
-type PanelContent p i = Content p i
-
 accordionItem
   :: forall headingProps triggerProps panelProps p i
    . Record
@@ -216,7 +214,7 @@ accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } 
               , HE.onClick \_ -> onOpenChange $ not open 
               ]
             )
-            triggerContent
+            [ triggerContent ]
         ]
     , renderPanel
         open
@@ -224,5 +222,5 @@ accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } 
         , HPA.role "region"
         , HPA.labelledBy triggerId
         ]
-        panelContent
+        [ panelContent ]
     ]

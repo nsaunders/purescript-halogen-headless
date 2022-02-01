@@ -23,7 +23,7 @@ stories = Object.empty
   # insert "Accordion|Multiple" multipleUncontrolled
   # insert "Accordion|Multiple (Controlled)" multipleControlled
 
-items :: forall p i. Array (Int /\ (Array (HH.HTML p i) /\ Array (HH.HTML p i)))
+items :: forall p i. Array (Int /\ HH.HTML p i /\ HH.HTML p i)
 items =
   [ 1
       /\ "What is a headless component?"
@@ -51,7 +51,7 @@ items =
     """
   ]
     <#>
-      \(Tuple v (Tuple q a)) -> v /\ [ HH.text q ] /\ [ HH.text a ]
+      \(Tuple v (Tuple q a)) -> v /\ HH.text q /\ HH.text a
 
 singleUncontrolled :: forall q i o m. MonadEffect m => Component q i o m
 singleUncontrolled =
