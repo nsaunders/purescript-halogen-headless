@@ -70,12 +70,12 @@ singleControlled =
       items
     Hooks.pure $
       HH.div_
-      [ accordion
-      , HH.p_
-        [ HH.strong_ [ HH.text "Selected value: " ]
-        , HH.text $ show value
+        [ accordion
+        , HH.p_
+            [ HH.strong_ [ HH.text "Selected value: " ]
+            , HH.text $ show value
+            ]
         ]
-      ]
 
 multipleUncontrolled :: forall q i o m. MonadEffect m => Component q i o m
 multipleUncontrolled =
@@ -94,9 +94,9 @@ multipleControlled =
       items
     Hooks.pure $
       HH.div_
-      [ accordion
-      , HH.p_
-        [ HH.strong_ [ HH.text "Selected value: " ]
-        , HH.text $ show value
+        [ accordion
+        , HH.p_
+            [ HH.strong_ [ HH.text "Selected value: " ]
+            , HH.text $ show value
+            ]
         ]
-      ]

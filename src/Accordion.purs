@@ -124,21 +124,20 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
         deselect = handler \s -> filter (_ /= s)
       Hooks.pure
         $ HH.div_
-        $
-          items
-            # mapWithIndex
-                \i (v /\ triggerContent /\ panelContent) ->
-                  accordionItem
-                    { renderHeading: renderHeading
-                    , renderTrigger: renderTrigger
-                    , renderPanel: renderPanel
-                    , open: v `elem` value
-                    , onOpenChange: \open -> if open then select v else deselect v
-                    }
-                    (fromMaybe "trigger" $ elementIds !! i)
-                    (fromMaybe "panel" $ elementIds !! (i + length items))
-                    triggerContent
-                    panelContent
+        $ items
+          # mapWithIndex
+              \i (v /\ triggerContent /\ panelContent) ->
+                accordionItem
+                  { renderHeading
+                  , renderTrigger
+                  , renderPanel
+                  , open: v `elem` value
+                  , onOpenChange: \open -> if open then select v else deselect v
+                  }
+                  (fromMaybe "trigger" $ elementIds !! i)
+                  (fromMaybe "panel" $ elementIds !! (i + length items))
+                  triggerContent
+                  panelContent
 
 type TriggerId = String
 
