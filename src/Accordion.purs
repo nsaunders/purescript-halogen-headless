@@ -4,9 +4,11 @@ import Prelude
 
 import DOM.HTML.Indexed (HTMLh2, HTMLbutton, HTMLdiv)
 import Data.Array (cons, elem, filter, head, length, mapWithIndex, singleton, take, (!!))
+import Data.Foldable (for_, traverse_)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple.Nested (type (/\), (/\))
-import Effect.Class (class MonadEffect)
+import Effect.Class (class MonadEffect, liftEffect)
+import Halogen (ClassName(..))
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
@@ -16,9 +18,19 @@ import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure,
 import Halogen.Hooks as Hooks
 import Record as Record
 import Type.Row (type (+))
+import Web.DOM.Element as Element
+import Web.DOM.NonDocumentTypeChildNode (nextElementSibling, previousElementSibling)
+import Web.DOM.ParentNode (QuerySelector(..), querySelector)
+import Web.Event.Event (currentTarget)
+import Web.HTML.HTMLElement (focus)
+import Web.HTML.HTMLElement as HTMLElement
+import Web.UIEvent.KeyboardEvent (KeyboardEvent, key)
+import Web.UIEvent.KeyboardEvent as KeyboardEvent
 import Web.UIEvent.MouseEvent (MouseEvent)
 
-type TriggerProps r = (id :: String, onClick :: MouseEvent | r)
+itemClassName = "hhe_accordion-item" :: String
+
+type TriggerProps r = (id :: String, onClick :: MouseEvent, onKeyDown :: KeyboardEvent | r)
 
 type PanelProps r = (id :: String | r)
 
@@ -122,6 +134,33 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
               pure unit
         select = handler \x -> (fromMaybe identity $ take <$> selectionLimit mode) <<< cons x
         deselect = handler \s -> filter (_ /= s)
+        nav e =
+          let
+            selectSibling f =
+              for_ (currentTarget (KeyboardEvent.toEvent e) >>= Element.fromEventTarget) \trigger -> do
+                maybeContainer <- Element.closest (QuerySelector $ "." <> itemClassName) trigger
+                for_ maybeContainer \container -> do
+                  element <- f container
+                  maybeTrigger <- querySelector (QuerySelector "[aria-controls]") $ Element.toParentNode element
+                  traverse_ focus $ maybeTrigger >>= HTMLElement.fromElement
+          in
+            case key e of
+              "ArrowUp" ->
+                selectSibling \el -> map (fromMaybe el) $ previousElementSibling $ Element.toNonDocumentTypeChildNode el
+              "ArrowDown" ->
+                selectSibling \el -> map (fromMaybe el) $ nextElementSibling $ Element.toNonDocumentTypeChildNode el
+              "Home" ->
+                let
+                  go el = previousElementSibling (Element.toNonDocumentTypeChildNode el) >>= map go >>> fromMaybe (pure el)
+                in
+                  selectSibling go
+              "End" ->
+                let
+                  go el = nextElementSibling (Element.toNonDocumentTypeChildNode el) >>= map go >>> fromMaybe (pure el)
+                in
+                  selectSibling go
+              _ ->
+                pure unit
       Hooks.pure
         $ HH.div_
         $ items
@@ -129,7 +168,8 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
               \i (v /\ triggerContent /\ panelContent) ->
                 accordionItem
                   { renderHeading
-                  , renderTrigger
+                  , renderTrigger:
+                    \open -> renderTrigger open <<< cons (HE.onKeyDown $ liftEffect <<< nav)
                   , renderPanel
                   , open: v `elem` value
                   , onOpenChange: \open -> if open then select v else deselect v
@@ -164,7 +204,8 @@ accordionItem
   -> PanelContent p i
   -> HH.HTML p i
 accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } triggerId panelId triggerContent panelContent =
-  HH.div_
+  HH.div
+    [ HP.class_ $ ClassName itemClassName ]
     [ renderHeading
         []
         [ renderTrigger
