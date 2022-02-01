@@ -9211,7 +9211,7 @@ var PS = {};
                           return "false";
                       })()), Halogen_HTML_Events.onClick(function (v1) {
                           return v.onOpenChange(!v.open);
-                      }) ])(triggerContent) ]), v.renderPanel(v.open)([ Halogen_HTML_Properties.id(panelId), Halogen_HTML_Properties_ARIA.role("region"), Halogen_HTML_Properties_ARIA.labelledBy(triggerId) ])(panelContent) ]);
+                      }) ])([ triggerContent ]) ]), v.renderPanel(v.open)([ Halogen_HTML_Properties.id(panelId), Halogen_HTML_Properties_ARIA.role("region"), Halogen_HTML_Properties_ARIA.labelledBy(triggerId) ])([ panelContent ]) ]);
                   };
               };
           };
@@ -9286,7 +9286,7 @@ var PS = {};
                                           if (v.onValueChange instanceof Data_Maybe.Nothing) {
                                               return Control_Applicative.pure(Halogen_Hooks_HookM.applicativeHookM)(Data_Unit.unit);
                                           };
-                                          throw new Error("Failed pattern match at Halogen.Headless.Accordion (line 130, column 11 - line 134, column 24): " + [ v.onValueChange.constructor.name ]);
+                                          throw new Error("Failed pattern match at Halogen.Headless.Accordion (line 134, column 11 - line 138, column 24): " + [ v.onValueChange.constructor.name ]);
                                       });
                                   };
                               };
@@ -11042,7 +11042,7 @@ var PS = {};
   var Halogen_Hooks_Hook = $PS["Halogen.Hooks.Hook"];
   var Halogen_Hooks_HookM = $PS["Halogen.Hooks.HookM"];                
   var items = Data_Functor.mapFlipped(Data_Functor.functorArray)([ new Data_Tuple.Tuple(1, new Data_Tuple.Tuple("What is a headless component?", "\x0a    A headless component addresses concerns like state, accessibility, and\x0a    keyboard support while allowing you to focus on implementing your own\x0a    visual design.\x0a    ")), new Data_Tuple.Tuple(2, new Data_Tuple.Tuple("Is the Accordion component accessible?", "\x0a    The Accordion component implements the WAI-ARIA Accordion Design Pattern\x0a    which provides an accessible markup structure to support screen reader\x0a    and keyboard users.\x0a    ")), new Data_Tuple.Tuple(3, new Data_Tuple.Tuple("How can I customize the Accordion component?", "\x0a    The Accordion component provides minimalistic default HTML. You can\x0a    provide your own functions to render the desired heading, trigger, and\x0a    panel markup.\x0a    ")) ])(function (v) {
-      return new Data_Tuple.Tuple(v.value0, new Data_Tuple.Tuple([ Halogen_HTML_Core.text(v.value1.value0) ], [ Halogen_HTML_Core.text(v.value1.value1) ]));
+      return new Data_Tuple.Tuple(v.value0, new Data_Tuple.Tuple(Halogen_HTML_Core.text(v.value1.value0), Halogen_HTML_Core.text(v.value1.value1)));
   });
   var multipleControlled = function (dictMonadEffect) {
       return Halogen_Hooks_Component.component(function (v) {
