@@ -1,4 +1,4 @@
-module Stories.Main where
+module Site.Main where
 
 import Prelude
 import Data.Maybe (Maybe(..))
@@ -9,18 +9,18 @@ import Foreign.Object (insert)
 import Halogen.Aff as HA
 import Halogen.HTML as HH
 import Halogen.Storybook (Stories, runStorybook)
-import Stories.Accordion as Accordion
-import Stories.Index as Index
+import Site.Index as Index
+import Site.Demo.Accordion as Accordion
 
-stories :: forall m. MonadEffect m => Stories m
-stories =
+pages :: forall m. MonadEffect m => Stories m
+pages =
   Object.empty
-    # Object.union Accordion.stories
     # insert "" Index.component
+    # Object.union Accordion.demos
 
 main :: Effect Unit
 main = HA.runHalogenAff $
   HA.awaitBody >>= runStorybook
-    { stories
+    { stories: pages
     , logo: Just $ HH.text "Halogen Headless"
     }

@@ -1,10 +1,12 @@
 {
   "private": true,
   "scripts": {
-    "format": "purs-tidy format-in-place stories/**/*.purs src/**/*.purs test/**/*.purs",
-    "postinstall": "spago install",
-    "server": "live-server --no-browser ./public",
-    "storybook": "spago bundle-app -m Stories.Main -p stories/**/*.purs --to ./public/app.js"
+    "build": "spago build",
+    "build:site": "spago -x site.dhall build",
+    "bundle:site": "spago -x site.dhall bundle-app -m Site.Main --to ./public/app.js",
+    "format": "purs-tidy format-in-place site/**/*.purs src/**/*.purs test/**/*.purs",
+    "postinstall": "spago install && spago -x site.dhall install",
+    "server": "live-server --no-browser ./public"
   },
   "devDependencies": {
     "live-server": "^1.2.1",

@@ -1,4 +1,4 @@
-module Stories.Accordion where
+module Site.Demo.Accordion where
 
 import Prelude
 
@@ -16,8 +16,8 @@ import Halogen.Hooks (useState)
 import Halogen.Hooks as Hooks
 import Halogen.Storybook (Stories)
 
-stories :: forall m. MonadEffect m => Stories m
-stories = Object.empty
+demos :: forall m. MonadEffect m => Stories m
+demos = Object.empty
   # insert "Accordion|Single" singleUncontrolled
   # insert "Accordion|Single (Controlled)" singleControlled
   # insert "Accordion|Multiple" multipleUncontrolled

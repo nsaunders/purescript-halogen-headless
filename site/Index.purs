@@ -1,4 +1,4 @@
-module Stories.Index where
+module Site.Index where
 
 import Prelude
 import Halogen (Component)
