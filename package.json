@@ -2,10 +2,9 @@
   "private": true,
   "scripts": {
     "build": "spago build",
-    "build:site": "spago -x site.dhall build",
-    "bundle:site": "spago -x site.dhall bundle-app -m Site.Main --to ./public/app.js",
+    "bundle": "spago -x site.dhall bundle-app -m Site.Main --to ./public/app.js --then \"spago -x site-css.dhall run -m Site.CSS\"",
     "format": "purs-tidy format-in-place site/**/*.purs src/**/*.purs test/**/*.purs",
-    "postinstall": "spago install && spago -x site.dhall install",
+    "postinstall": "spago install && spago -x site.dhall install && spago -x site-css.dhall install",
     "server": "live-server --no-browser ./public"
   },
   "devDependencies": {

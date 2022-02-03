@@ -2,19 +2,28 @@ module Site.Demo.Accordion where
 
 import Prelude
 
+import CSS (StyleM, background, black, border, byClass, color, display, em, fontFamily, fontSize, hover, inlineBlock, margin, maxHeight, nil, padding, pct, pseudo, px, rem, solid, star, transitionDuration, transitionProperty, vh, width, (&), (?))
+import CSS.Overflow (hidden, overflow)
+import CSS.TextAlign (startTextAlign, textAlign)
+import DOM.HTML.Indexed (HTMLbutton, HTMLdiv, HTMLh3)
+import Data.Array ((:))
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple(..), uncurry)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect)
 import Foreign.Object (insert)
 import Foreign.Object as Object
 import Halogen (Component)
+import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Properties as HP
 import Halogen.Headless.Accordion (useAccordion)
 import Halogen.Headless.Accordion as Accordion
 import Halogen.Hooks (useState)
 import Halogen.Hooks as Hooks
 import Halogen.Storybook (Stories)
+import Record.Extra (mapRecord)
+import Site.Theme as Theme
 
 demos :: forall m. MonadEffect m => Stories m
 demos = Object.empty
@@ -53,10 +62,98 @@ items =
     <#>
       \(Tuple v (Tuple q a)) -> v /\ HH.text q /\ HH.text a
 
+type Styles a =
+  { heading :: a
+  , trigger :: a
+  , triggerIndicator :: a
+  , panel :: a
+  , panelClosed :: a
+  , panelOpen :: a
+  , content :: a
+  }
+
+styles :: Styles String
+styles =
+  { heading: "heading"
+  , trigger: "trigger"
+  , triggerIndicator: "trigger-indicator"
+  , panel: "panel"
+  , panelClosed: "panel-closed"
+  , panelOpen: "panel-open"
+  , content: "content"
+  }
+
+css :: StyleM Unit
+css = do
+  star & byClass styles.heading ? margin nil nil nil nil
+  star & byClass styles.trigger ? do
+    margin nil nil nil nil
+    padding (rem 0.5) (rem 1.0) (rem 0.5) (rem 1.0)
+    width $ pct 100.0
+    border solid (px 0.0) black
+    textAlign startTextAlign
+    uncurry fontFamily Theme.sans
+    fontSize $ rem 1.0
+    background Theme.blue600
+    color Theme.blue100
+  (star & byClass styles.trigger) & hover ? background Theme.blue700
+  (star & byClass styles.trigger) & pseudo "active" ? background Theme.blue800
+  star & byClass styles.triggerIndicator ? do
+    uncurry fontFamily Theme.mono
+    display inlineBlock
+    width (em 1.0)
+  star & byClass styles.panel ? do
+    overflow hidden
+    transitionProperty "max-height"
+    transitionDuration "250ms"
+  star & byClass styles.panelClosed ? maxHeight (rem 0.125)
+  star & byClass styles.panelOpen ? maxHeight (vh 100.0)
+  star & byClass styles.content ? do
+    padding (rem 1.0) (rem 1.0) (rem 1.0) (rem 1.0)
+
+hstyles :: Styles H.ClassName
+hstyles = mapRecord H.ClassName styles
+
+renderHeading
+  :: forall p i
+   . Array (HP.IProp HTMLh3 i)
+  -> Array (HH.HTML p i)
+  -> HH.HTML p i
+renderHeading props =
+  HH.h3 $ HP.class_ hstyles.heading : props
+
+renderTrigger
+  :: forall p i
+   . Boolean
+  -> Array (HP.IProp HTMLbutton i)
+  -> Array (HH.HTML p i)
+  -> HH.HTML p i
+renderTrigger open props content =
+  HH.button
+    (HP.class_ hstyles.trigger : props)
+    (HH.div [ HP.class_ hstyles.triggerIndicator ] [ HH.text (if open then "-" else "+") ] : content)
+
+renderPanel
+  :: forall p i
+   . Boolean
+  -> Array (HP.IProp HTMLdiv i)
+  -> Array (HH.HTML p i)
+  -> HH.HTML p i
+renderPanel open props content =
+  HH.div
+    (HP.classes (hstyles.panel : if open then [ hstyles.panelOpen ] else [ hstyles.panelClosed ]) : props)
+    [ HH.div [ HP.class_ hstyles.content ] content ]
+
 singleUncontrolled :: forall q i o m. MonadEffect m => Component q i o m
 singleUncontrolled =
   Hooks.component \_ _ ->
-    useAccordion (Accordion.defaultOptions Accordion.Single) items
+    useAccordion
+      (Accordion.defaultOptions Accordion.Single)
+        { renderHeading = renderHeading
+        , renderTrigger = renderTrigger
+        , renderPanel = renderPanel
+        }
+      items
 
 singleControlled :: forall q i o m. MonadEffect m => Component q i o m
 singleControlled =
@@ -66,6 +163,9 @@ singleControlled =
       (Accordion.defaultOptions Accordion.Single)
         { value = Just value
         , onValueChange = Just $ Hooks.put valueId
+        , renderHeading = renderHeading
+        , renderTrigger = renderTrigger
+        , renderPanel = renderPanel
         }
       items
     Hooks.pure $
@@ -80,7 +180,13 @@ singleControlled =
 multipleUncontrolled :: forall q i o m. MonadEffect m => Component q i o m
 multipleUncontrolled =
   Hooks.component \_ _ ->
-    useAccordion (Accordion.defaultOptions Accordion.Multiple) items
+    useAccordion
+      (Accordion.defaultOptions Accordion.Multiple)
+        { renderHeading = renderHeading
+        , renderTrigger = renderTrigger
+        , renderPanel = renderPanel
+        }
+      items
 
 multipleControlled :: forall q i o m. MonadEffect m => Component q i o m
 multipleControlled =
@@ -90,6 +196,9 @@ multipleControlled =
       (Accordion.defaultOptions Accordion.Multiple)
         { value = Just value
         , onValueChange = Just $ Hooks.put valueId
+        , renderHeading = renderHeading
+        , renderTrigger = renderTrigger
+        , renderPanel = renderPanel
         }
       items
     Hooks.pure $
