@@ -1,0 +1,9 @@
+.heading { margin: 0 0 0 0  }
+.trigger { margin: 0 0 0 0 ; padding: 0.5rem 1.0rem 0.5rem 1.0rem ; width: 100.0%; border: solid 0.0px hsl(0.0, 0.0%, 0.0%) ; text-align: start; font-family: "Noto Sans", sans-serif; font-size: 1.0rem; background: hsl(210.0, 98.2%, 44.1%); color: hsl(210.0, 92.3%, 94.9%) }
+.trigger:hover { background: hsl(210.0, 97.9%, 36.9%) }
+.trigger:active { background: hsl(210.0, 98.7%, 29.4%) }
+.trigger-indicator { font-family: "Noto Sans Mono", sans-serif; display: inline-block; width: 1.0em }
+.panel { overflow: hidden; transition-property: max-height; transition-duration: 250ms }
+.panel-closed { max-height: 0.125rem }
+.panel-open { max-height: 100.0vh }
+.content { padding: 1.0rem 1.0rem 1.0rem 1.0rem  }
