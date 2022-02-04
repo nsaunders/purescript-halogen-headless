@@ -7,7 +7,7 @@ import CSS.Overflow (hidden, overflow)
 import CSS.TextAlign (startTextAlign, textAlign)
 import DOM.HTML.Indexed (HTMLbutton, HTMLdiv, HTMLh3)
 import Data.Array ((:))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..), uncurry)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect)
@@ -104,10 +104,8 @@ css = do
     width (em 1.0)
   star & byClass styles.panel ? do
     overflow hidden
-    transitionProperty "max-height"
+    transitionProperty "height"
     transitionDuration "250ms"
-  star & byClass styles.panelClosed ? maxHeight (rem 0.125)
-  star & byClass styles.panelOpen ? maxHeight (vh 100.0)
   star & byClass styles.content ? do
     padding (rem 1.0) (rem 1.0) (rem 1.0) (rem 1.0)
 
@@ -135,13 +133,13 @@ renderTrigger open props content =
 
 renderPanel
   :: forall p i
-   . Boolean
+   . { open :: Boolean, targetHeight :: Maybe Number }
   -> Array (HP.IProp HTMLdiv i)
   -> Array (HH.HTML p i)
   -> HH.HTML p i
-renderPanel open props content =
+renderPanel { targetHeight } props content =
   HH.div
-    (HP.classes (hstyles.panel : if open then [ hstyles.panelOpen ] else [ hstyles.panelClosed ]) : props)
+    ([ HP.class_ hstyles.panel, HP.style $ fromMaybe "" $ (\h -> "height: " <> show h <> "px") <$> targetHeight ] <> props)
     content
 
 singleUncontrolled :: forall q i o m. MonadEffect m => Component q i o m

@@ -2,10 +2,16 @@ module Halogen.Headless.Accordion (class SelectionMode, Single(..), Multiple(..)
 
 import Prelude
 
+import Control.Alt ((<|>))
 import DOM.HTML.Indexed (HTMLh2, HTMLbutton, HTMLdiv)
-import Data.Array (cons, elem, filter, head, mapWithIndex, singleton, take)
-import Data.Foldable (for_, traverse_)
+import Data.Array (cons, elem, head, mapWithIndex, singleton, take)
+import Data.Array as Array
+import Data.Foldable (find, foldr)
+import Data.Map (Map)
+import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Set as Set
+import Data.Traversable (for_, traverse, traverse_)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
 import Halogen (ClassName(..))
@@ -14,16 +20,20 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Headless.Internal.ElementId (UseElementId, useElementId)
-import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseState, useState)
+import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseEffect, UseState, useState)
 import Halogen.Hooks as Hooks
 import Record as Record
 import Type.Row (type (+))
 import Web.DOM.Element as Element
 import Web.DOM.NonDocumentTypeChildNode (nextElementSibling, previousElementSibling)
+import Web.DOM.NonElementParentNode (getElementById)
 import Web.DOM.ParentNode (QuerySelector(..), querySelector)
 import Web.Event.Event (currentTarget)
-import Web.HTML.HTMLElement (focus)
+import Web.HTML as HTML
+import Web.HTML.HTMLDocument as HTMLDocument
+import Web.HTML.HTMLElement (focus, offsetHeight)
 import Web.HTML.HTMLElement as HTMLElement
+import Web.HTML.Window as Window
 import Web.UIEvent.KeyboardEvent (KeyboardEvent, key)
 import Web.UIEvent.KeyboardEvent as KeyboardEvent
 import Web.UIEvent.MouseEvent (MouseEvent)
@@ -41,7 +51,7 @@ type Open = Boolean
 type RenderOptions headingProps triggerProps panelProps p i r =
   ( renderHeading :: Render headingProps p i
   , renderTrigger :: Open -> Render triggerProps p i
-  , renderPanel :: Open -> Render panelProps p i
+  , renderPanel :: { open :: Boolean, targetHeight :: Maybe Number } -> Render panelProps p i
   | r
   )
 
@@ -51,7 +61,7 @@ defaultRenderOptions
 defaultRenderOptions =
   { renderHeading: HH.h2
   , renderTrigger: const HH.button
-  , renderPanel: \open p -> HH.div (p <> if open then [] else [HP.style "display:none"])
+  , renderPanel: \{ open } p -> HH.div (p <> if open then [] else [HP.style "display:none"])
   }
 
 type ValueOptions :: forall k. (k -> Type) -> k -> Type -> Row Type -> Row Type
@@ -112,11 +122,12 @@ type Item a p i =
 
 foreign import data UseAccordion :: Type -> HookType
 
-instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> Pure)
+instance HookNewtype (UseAccordion a) (UseElementId <> UseState (Array a) <> UseState (Map a Number) <> UseEffect <> Pure)
 
 useAccordion
   :: forall headingProps triggerProps panelProps a p m mode f
    . Eq a
+  => Ord a
   => MonadEffect m
   => SelectionMode mode f
   => Record (Options headingProps (TriggerProps triggerProps) (PanelProps panelProps) a p (HookM m Unit) mode f)
@@ -125,8 +136,16 @@ useAccordion
 useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp, onValueChange } items =
   Hooks.wrap $
     Hooks.do
-      selection /\ selectionId <- useState $ fromMaybe [] (selectionToArray mode <$> valueProp)
       id <- useElementId
+      selection /\ selectionId <- useState $ fromMaybe [] (selectionToArray mode <$> valueProp)
+      targetHeight /\ targetHeightId <- useState Map.empty
+      Hooks.captures
+        { selection }
+        Hooks.useTickEffect do
+          Hooks.modify_
+            targetHeightId
+            \targetHeight' -> foldr Map.delete targetHeight' $ Set.filter (\k -> not $ k `elem` selection) $ Map.keys targetHeight'
+          pure Nothing
       let
         value = fromMaybe selection (selectionToArray mode <$> valueProp)
         handler f s = do
@@ -137,7 +156,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
             Nothing ->
               pure unit
         select = handler \x -> (fromMaybe identity $ take <$> selectionLimit mode) <<< cons x
-        deselect = handler \s -> filter (_ /= s)
+        deselect = handler \s -> Array.filter (_ /= s)
         nav e =
           let
             selectSibling f =
@@ -186,13 +205,22 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
                             [ HP.id triggerId
                             , HPA.controls panelId
                             , HPA.expanded $ if open then "true" else "false"
-                            , HE.onClick \_ -> v # if open then deselect else select
+                            , HE.onClick \_ -> do
+                                if open
+                                  then deselect v
+                                  else do
+                                    maybeHeight <- liftEffect do
+                                                     doc <- HTMLDocument.toNonElementParentNode <$> (Window.document =<< HTML.window)
+                                                     maybeMeasure <- doc # getElementById measureId
+                                                     traverse offsetHeight $ maybeMeasure >>= HTMLElement.fromElement
+                                    traverse_ (Hooks.modify_ targetHeightId <<< Map.insert v) maybeHeight
+                                    select v
                             , HE.onKeyDown $ liftEffect <<< nav
                             ]
                             [ triggerContent ]
                         ]
                     , renderPanel
-                      open
+                      { open, targetHeight: Map.lookup v targetHeight <|> find (const $ not open) (Just 0.0) }
                       [ HP.id panelId
                       , HPA.role "region"
                       , HPA.labelledBy triggerId
