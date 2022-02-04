@@ -9194,10 +9194,10 @@ var PS = {};
           return Data_Array.head;
       },
       selectionToArray: function (v) {
-          var $58 = Data_Maybe.fromMaybe([  ]);
-          var $59 = Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.singleton);
-          return function ($60) {
-              return $58($59($60));
+          var $47 = Data_Maybe.fromMaybe([  ]);
+          var $48 = Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.singleton);
+          return function ($49) {
+              return $47($48($49));
           };
       },
       defaultValueOptions: function (v) {
@@ -9234,48 +9234,6 @@ var PS = {};
       return dict.selectionFromArray;
   };
   var itemClassName = "hhe_accordion-item";
-  var defaultValueOptions = function (dict) {
-      return dict.defaultValueOptions;
-  };
-  var defaultRenderOptions = {
-      renderHeading: Halogen_HTML_Elements.h2,
-      renderTrigger: Data_Function["const"](Halogen_HTML_Elements.button),
-      renderPanel: function (open) {
-          return function (p) {
-              return Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)(p)((function () {
-                  if (open) {
-                      return [  ];
-                  };
-                  return [ Halogen_HTML_Properties.style("display:none") ];
-              })()));
-          };
-      }
-  };
-  var defaultOptions = function (dictSelectionMode) {
-      return function (mode) {
-          return Record.merge()()(defaultRenderOptions)(Record.merge()()({
-              mode: mode
-          })(defaultValueOptions(dictSelectionMode)(mode)));
-      };
-  };
-  var accordionItem = function (v) {
-      return function (triggerId) {
-          return function (panelId) {
-              return function (triggerContent) {
-                  return function (panelContent) {
-                      return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_(itemClassName) ])([ v.renderHeading([  ])([ v.renderTrigger(v.open)([ Halogen_HTML_Properties.id(triggerId), Halogen_HTML_Properties_ARIA.controls(panelId), Halogen_HTML_Properties_ARIA.expanded((function () {
-                          if (v.open) {
-                              return "true";
-                          };
-                          return "false";
-                      })()), Halogen_HTML_Events.onClick(function (v1) {
-                          return v.onOpenChange(!v.open);
-                      }) ])([ triggerContent ]) ]), v.renderPanel(v.open)([ Halogen_HTML_Properties.id(panelId), Halogen_HTML_Properties_ARIA.role("region"), Halogen_HTML_Properties_ARIA.labelledBy(triggerId) ])([ panelContent ]) ]);
-                  };
-              };
-          };
-      };
-  };
   var useAccordion = function (dictEq) {
       return function (dictMonadEffect) {
           return function (dictSelectionMode) {
@@ -9313,10 +9271,10 @@ var PS = {};
                                   if (v2 === "Home") {
                                       var go = function (el) {
                                           return Control_Bind.bind(Effect.bindEffect)(Web_DOM_NonDocumentTypeChildNode.previousElementSibling(Web_DOM_Element.toNonDocumentTypeChildNode(el)))((function () {
-                                              var $61 = Data_Maybe.fromMaybe(Control_Applicative.pure(Effect.applicativeEffect)(el));
-                                              var $62 = Data_Functor.map(Data_Maybe.functorMaybe)(go);
-                                              return function ($63) {
-                                                  return $61($62($63));
+                                              var $50 = Data_Maybe.fromMaybe(Control_Applicative.pure(Effect.applicativeEffect)(el));
+                                              var $51 = Data_Functor.map(Data_Maybe.functorMaybe)(go);
+                                              return function ($52) {
+                                                  return $50($51($52));
                                               };
                                           })());
                                       };
@@ -9325,10 +9283,10 @@ var PS = {};
                                   if (v2 === "End") {
                                       var go = function (el) {
                                           return Control_Bind.bind(Effect.bindEffect)(Web_DOM_NonDocumentTypeChildNode.nextElementSibling(Web_DOM_Element.toNonDocumentTypeChildNode(el)))((function () {
-                                              var $64 = Data_Maybe.fromMaybe(Control_Applicative.pure(Effect.applicativeEffect)(el));
-                                              var $65 = Data_Functor.map(Data_Maybe.functorMaybe)(go);
-                                              return function ($66) {
-                                                  return $64($65($66));
+                                              var $53 = Data_Maybe.fromMaybe(Control_Applicative.pure(Effect.applicativeEffect)(el));
+                                              var $54 = Data_Functor.map(Data_Maybe.functorMaybe)(go);
+                                              return function ($55) {
+                                                  return $53($54($55));
                                               };
                                           })());
                                       };
@@ -9350,10 +9308,10 @@ var PS = {};
                                   };
                               };
                               var select = handler(function (x) {
-                                  var $67 = Data_Maybe.fromMaybe(Control_Category.identity(Control_Category.categoryFn))(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.take)(selectionLimit(dictSelectionMode)(v.mode)));
-                                  var $68 = Data_Array.cons(x);
-                                  return function ($69) {
-                                      return $67($68($69));
+                                  var $56 = Data_Maybe.fromMaybe(Control_Category.identity(Control_Category.categoryFn))(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.take)(selectionLimit(dictSelectionMode)(v.mode)));
+                                  var $57 = Data_Array.cons(x);
+                                  return function ($58) {
+                                      return $56($57($58));
                                   };
                               });
                               var deselect = handler(function (s) {
@@ -9363,29 +9321,27 @@ var PS = {};
                               });
                               return Halogen_Hooks_Hook.pure(Halogen_HTML_Elements.div_(Data_Array.mapWithIndex(function (i) {
                                   return function (v2) {
-                                      return accordionItem({
-                                          renderHeading: v.renderHeading,
-                                          renderTrigger: function (open) {
-                                              var $70 = v.renderTrigger(open);
-                                              var $71 = Data_Array.cons(Halogen_HTML_Events.onKeyDown((function () {
-                                                  var $73 = Effect_Class.liftEffect(Halogen_Hooks_HookM.monadEffectHookM(dictMonadEffect));
-                                                  return function ($74) {
-                                                      return $73(nav($74));
-                                                  };
-                                              })()));
-                                              return function ($72) {
-                                                  return $70($71($72));
-                                              };
-                                          },
-                                          renderPanel: v.renderPanel,
-                                          open: Data_Array.elem(dictEq)(v2.value0)(value),
-                                          onOpenChange: function (open) {
+                                      var triggerId = Data_Maybe.fromMaybe("trigger")(Data_Array.index(elementIds)(i));
+                                      var panelId = Data_Maybe.fromMaybe("trigger")(Data_Array.index(elementIds)(i + Data_Array.length(items) | 0));
+                                      var open = Data_Array.elem(dictEq)(v2.value0)(value);
+                                      return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_(itemClassName) ])([ v.renderHeading([  ])([ v.renderTrigger(open)([ Halogen_HTML_Properties.id(triggerId), Halogen_HTML_Properties_ARIA.controls(panelId), Halogen_HTML_Properties_ARIA.expanded((function () {
+                                          if (open) {
+                                              return "true";
+                                          };
+                                          return "false";
+                                      })()), Halogen_HTML_Events.onClick(function (v4) {
+                                          return (function () {
                                               if (open) {
-                                                  return select(v2.value0);
+                                                  return deselect;
                                               };
-                                              return deselect(v2.value0);
-                                          }
-                                      })(Data_Maybe.fromMaybe("trigger")(Data_Array.index(elementIds)(i)))(Data_Maybe.fromMaybe("panel")(Data_Array.index(elementIds)(i + Data_Array.length(items) | 0)))(v2.value1.value0)(v2.value1.value1);
+                                              return select;
+                                          })()(v2.value0);
+                                      }), Halogen_HTML_Events.onKeyDown((function () {
+                                          var $59 = Effect_Class.liftEffect(Halogen_Hooks_HookM.monadEffectHookM(dictMonadEffect));
+                                          return function ($60) {
+                                              return $59(nav($60));
+                                          };
+                                      })()) ])([ v2.value1.value0 ]) ]), v.renderPanel(open)([ Halogen_HTML_Properties.id(panelId), Halogen_HTML_Properties_ARIA.role("region"), Halogen_HTML_Properties_ARIA.labelledBy(triggerId) ])([ v2.value1.value1 ]) ]);
                                   };
                               })(items)));
                           });
@@ -9393,6 +9349,30 @@ var PS = {};
                   };
               };
           };
+      };
+  };
+  var defaultValueOptions = function (dict) {
+      return dict.defaultValueOptions;
+  };
+  var defaultRenderOptions = {
+      renderHeading: Halogen_HTML_Elements.h2,
+      renderTrigger: Data_Function["const"](Halogen_HTML_Elements.button),
+      renderPanel: function (open) {
+          return function (p) {
+              return Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)(p)((function () {
+                  if (open) {
+                      return [  ];
+                  };
+                  return [ Halogen_HTML_Properties.style("display:none") ];
+              })()));
+          };
+      }
+  };
+  var defaultOptions = function (dictSelectionMode) {
+      return function (mode) {
+          return Record.merge()()(defaultRenderOptions)(Record.merge()()({
+              mode: mode
+          })(defaultValueOptions(dictSelectionMode)(mode)));
       };
   };
   exports["Single"] = Single;
