@@ -170,57 +170,30 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
         $ items
           # mapWithIndex
               \i (v /\ triggerContent /\ panelContent) ->
-                accordionItem
-                  { renderHeading
-                  , renderTrigger:
-                    \open -> renderTrigger open <<< cons (HE.onKeyDown $ liftEffect <<< nav)
-                  , renderPanel
-                  , open: v `elem` value
-                  , onOpenChange: \open -> if open then select v else deselect v
-                  }
-                  (fromMaybe "trigger" $ elementIds !! i)
-                  (fromMaybe "panel" $ elementIds !! (i + length items))
-                  triggerContent
-                  panelContent
-
-type TriggerId = String
-
-type PanelId = String
-
-accordionItem
-  :: forall headingProps triggerProps panelProps p i
-   . Record
-     (
-       RenderOptions headingProps (TriggerProps triggerProps) (PanelProps panelProps) p i
-       + ( open :: Boolean
-         , onOpenChange :: Open -> i
-         )
-     )
-  -> TriggerId
-  -> PanelId
-  -> TriggerContent p i
-  -> PanelContent p i
-  -> HH.HTML p i
-accordionItem { renderHeading, renderTrigger, renderPanel, open, onOpenChange } triggerId panelId triggerContent panelContent =
-  HH.div
-    [ HP.class_ $ ClassName itemClassName ]
-    [ renderHeading
-        []
-        [ renderTrigger
-            open
-            ( [ HP.id triggerId
-              , HPA.controls panelId
-              , HPA.expanded $ if open then "true" else "false"
-              , HE.onClick \_ -> onOpenChange $ not open 
-              ]
-            )
-            [ triggerContent ]
-        ]
-    , renderPanel
-        open
-        [ HP.id panelId
-        , HPA.role "region"
-        , HPA.labelledBy triggerId
-        ]
-        [ panelContent ]
-    ]
+                let
+                  open = v `elem` value
+                  triggerId = fromMaybe "trigger" $ elementIds !! i
+                  panelId = fromMaybe "trigger" $ elementIds !! (i + length items)
+                in
+                  HH.div
+                    [ HP.class_ $ ClassName itemClassName ]
+                    [ renderHeading
+                        []
+                        [ renderTrigger
+                            open
+                            [ HP.id triggerId
+                            , HPA.controls panelId
+                            , HPA.expanded $ if open then "true" else "false"
+                            , HE.onClick \_ -> v # if open then deselect else select
+                            , HE.onKeyDown $ liftEffect <<< nav
+                            ]
+                            [ triggerContent ]
+                        ]
+                    , renderPanel
+                        open
+                        [ HP.id panelId
+                        , HPA.role "region"
+                        , HPA.labelledBy triggerId
+                        ]
+                        [ panelContent ]
+                    ]
