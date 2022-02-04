@@ -60,7 +60,7 @@ items =
     """
   ]
     <#>
-      \(Tuple v (Tuple q a)) -> v /\ HH.text q /\ HH.text a
+      \(Tuple v (Tuple q a)) -> v /\ HH.text q /\ HH.div [ HP.class_ hstyles.content ] [ HH.text a ]
 
 type Styles a =
   { heading :: a
@@ -142,7 +142,7 @@ renderPanel
 renderPanel open props content =
   HH.div
     (HP.classes (hstyles.panel : if open then [ hstyles.panelOpen ] else [ hstyles.panelClosed ]) : props)
-    [ HH.div [ HP.class_ hstyles.content ] content ]
+    content
 
 singleUncontrolled :: forall q i o m. MonadEffect m => Component q i o m
 singleUncontrolled =

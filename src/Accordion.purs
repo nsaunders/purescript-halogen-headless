@@ -3,7 +3,7 @@ module Halogen.Headless.Accordion (class SelectionMode, Single(..), Multiple(..)
 import Prelude
 
 import DOM.HTML.Indexed (HTMLh2, HTMLbutton, HTMLdiv)
-import Data.Array (cons, elem, filter, head, length, mapWithIndex, singleton, take, (!!))
+import Data.Array (cons, elem, filter, head, mapWithIndex, singleton, take)
 import Data.Foldable (for_, traverse_)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple.Nested (type (/\), (/\))
@@ -13,7 +13,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.HTML.Properties.ARIA as HPA
-import Halogen.Headless.Internal.ElementId (UseElementIds, useElementIds)
+import Halogen.Headless.Internal.ElementId (UseElementId, useElementId)
 import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseState, useState)
 import Halogen.Hooks as Hooks
 import Record as Record
@@ -112,7 +112,7 @@ type Item a p i =
 
 foreign import data UseAccordion :: Type -> HookType
 
-instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementIds <> Pure)
+instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> Pure)
 
 useAccordion
   :: forall headingProps triggerProps panelProps a p m mode f
@@ -126,7 +126,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
   Hooks.wrap $
     Hooks.do
       selection /\ selectionId <- useState $ fromMaybe [] (selectionToArray mode <$> valueProp)
-      elementIds <- useElementIds $ length items * 2
+      id <- useElementId
       let
         value = fromMaybe selection (selectionToArray mode <$> valueProp)
         handler f s = do
@@ -172,8 +172,10 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
               \i (v /\ triggerContent /\ panelContent) ->
                 let
                   open = v `elem` value
-                  triggerId = fromMaybe "trigger" $ elementIds !! i
-                  panelId = fromMaybe "trigger" $ elementIds !! (i + length items)
+                  elementId = id <> "_" <> show i
+                  triggerId = elementId <> "_trigger"
+                  panelId = elementId <> "_panel"
+                  measureId = elementId <> "_measure"
                 in
                   HH.div
                     [ HP.class_ $ ClassName itemClassName ]
@@ -190,10 +192,10 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
                             [ triggerContent ]
                         ]
                     , renderPanel
-                        open
-                        [ HP.id panelId
-                        , HPA.role "region"
-                        , HPA.labelledBy triggerId
-                        ]
-                        [ panelContent ]
+                      open
+                      [ HP.id panelId
+                      , HPA.role "region"
+                      , HPA.labelledBy triggerId
+                      ]
+                      [ HH.div [HP.id measureId] [panelContent] ]
                     ]
