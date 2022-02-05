@@ -122,7 +122,7 @@ type Item a p i =
 
 foreign import data UseAccordion :: Type -> HookType
 
-instance HookNewtype (UseAccordion a) (UseElementId <> UseState (Array a) <> UseState (Map a Number) <> UseEffect <> Pure)
+instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> UseState (Map a Number) <> UseEffect <> Pure)
 
 useAccordion
   :: forall headingProps triggerProps panelProps a p m mode f
@@ -136,9 +136,12 @@ useAccordion
 useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp, onValueChange } items =
   Hooks.wrap $
     Hooks.do
-      id <- useElementId
       selection /\ selectionId <- useState $ fromMaybe [] (selectionToArray mode <$> valueProp)
+
+      accordionId <- useElementId
+
       targetHeight /\ targetHeightId <- useState Map.empty
+
       Hooks.captures
         { selection }
         Hooks.useTickEffect do
@@ -146,8 +149,11 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
             targetHeightId
             \targetHeight' -> foldr Map.delete targetHeight' $ Set.filter (\k -> not $ k `elem` selection) $ Map.keys targetHeight'
           pure Nothing
+
       let
+
         value = fromMaybe selection (selectionToArray mode <$> valueProp)
+
         handler f s = do
           sel <- Hooks.modify selectionId $ f s
           case onValueChange of
@@ -155,8 +161,11 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
               onValueChange' $ selectionFromArray mode sel
             Nothing ->
               pure unit
+
         select = handler \x -> (fromMaybe identity $ take <$> selectionLimit mode) <<< cons x
+
         deselect = handler \s -> Array.filter (_ /= s)
+
         nav e =
           let
             selectSibling f =
@@ -184,6 +193,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
                   selectSibling go
               _ ->
                 pure unit
+
       Hooks.pure
         $ HH.div_
         $ items
@@ -191,7 +201,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
               \i (v /\ triggerContent /\ panelContent) ->
                 let
                   open = v `elem` value
-                  elementId = id <> "_" <> show i
+                  elementId = accordionId <> "_" <> show i
                   triggerId = elementId <> "_trigger"
                   panelId = elementId <> "_panel"
                   measureId = elementId <> "_measure"
