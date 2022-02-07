@@ -11,6 +11,7 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Set as Set
+import Data.String as String
 import Data.Traversable (for_, traverse, traverse_)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
@@ -138,7 +139,11 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
     Hooks.do
       selection /\ selectionId <- useState $ fromMaybe [] (selectionToArray mode <$> valueProp)
 
-      accordionId <- useElementId
+      elementId <- (\e s i -> String.joinWith "_" [e, s, show i]) <$> useElementId
+      let
+        triggerId = elementId "trigger"
+        panelId = elementId "panel"
+        measureId = elementId "measure"
 
       targetHeight /\ targetHeightId <- useState Map.empty
 
@@ -153,6 +158,8 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
       let
 
         value = fromMaybe selection (selectionToArray mode <$> valueProp)
+
+        open = flip elem value
 
         handler f s = do
           sel <- Hooks.modify selectionId $ f s
@@ -199,41 +206,34 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
         $ items
           # mapWithIndex
               \i (v /\ triggerContent /\ panelContent) ->
-                let
-                  open = v `elem` value
-                  elementId = accordionId <> "_" <> show i
-                  triggerId = elementId <> "_trigger"
-                  panelId = elementId <> "_panel"
-                  measureId = elementId <> "_measure"
-                in
-                  HH.div
-                    [ HP.class_ $ ClassName itemClassName ]
-                    [ renderHeading
-                        []
-                        [ renderTrigger
-                            open
-                            [ HP.id triggerId
-                            , HPA.controls panelId
-                            , HPA.expanded $ if open then "true" else "false"
-                            , HE.onClick \_ -> do
-                                if open
-                                  then deselect v
-                                  else do
-                                    maybeHeight <- liftEffect do
-                                                     doc <- HTMLDocument.toNonElementParentNode <$> (Window.document =<< HTML.window)
-                                                     maybeMeasure <- doc # getElementById measureId
-                                                     traverse offsetHeight $ maybeMeasure >>= HTMLElement.fromElement
-                                    traverse_ (Hooks.modify_ targetHeightId <<< Map.insert v) maybeHeight
-                                    select v
-                            , HE.onKeyDown $ liftEffect <<< nav
-                            ]
-                            [ triggerContent ]
-                        ]
-                    , renderPanel
-                      { open, targetHeight: Map.lookup v targetHeight <|> find (const $ not open) (Just 0.0) }
-                      [ HP.id panelId
-                      , HPA.role "region"
-                      , HPA.labelledBy triggerId
+                HH.div
+                  [ HP.class_ $ ClassName itemClassName ]
+                  [ renderHeading
+                      []
+                      [ renderTrigger
+                          (open v)
+                          [ HP.id $ triggerId i
+                          , HPA.controls $ panelId i
+                          , HPA.expanded $ if open v then "true" else "false"
+                          , HE.onClick \_ -> do
+                              if open v
+                                then deselect v
+                                else do
+                                  maybeHeight <- liftEffect do
+                                                   doc <- HTMLDocument.toNonElementParentNode <$> (Window.document =<< HTML.window)
+                                                   maybeMeasure <- doc # getElementById (measureId i)
+                                                   traverse offsetHeight $ maybeMeasure >>= HTMLElement.fromElement
+                                  traverse_ (Hooks.modify_ targetHeightId <<< Map.insert v) maybeHeight
+                                  select v
+                          , HE.onKeyDown $ liftEffect <<< nav
+                          ]
+                          [ triggerContent ]
                       ]
-                      [ HH.div [HP.id measureId] [panelContent] ]
+                  , renderPanel
+                    { open: open v, targetHeight: Map.lookup v targetHeight <|> find (const $ not $ open v) (Just 0.0) }
+                    [ HP.id $ panelId i
+                    , HPA.role "region"
+                    , HPA.labelledBy $ triggerId i
                     ]
+                    [ HH.div [HP.id $ measureId i] [panelContent] ]
+                  ]
