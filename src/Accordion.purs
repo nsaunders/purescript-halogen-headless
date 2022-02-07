@@ -139,8 +139,9 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
     Hooks.do
       selection /\ selectionId <- useState $ fromMaybe [] (selectionToArray mode <$> valueProp)
 
-      elementId <- (\e s i -> String.joinWith "_" [e, s, show i]) <$> useElementId
+      blockId <- useElementId
       let
+        elementId s i = String.joinWith "_" [blockId, s, show i]
         triggerId = elementId "trigger"
         panelId = elementId "panel"
         measureId = elementId "measure"
@@ -202,38 +203,39 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
                 pure unit
 
       Hooks.pure
-        $ HH.div_
-        $ items
-          # mapWithIndex
-              \i (v /\ triggerContent /\ panelContent) ->
-                HH.div
-                  [ HP.class_ $ ClassName itemClassName ]
-                  [ renderHeading
-                      []
-                      [ renderTrigger
-                          (open v)
-                          [ HP.id $ triggerId i
-                          , HPA.controls $ panelId i
-                          , HPA.expanded $ if open v then "true" else "false"
-                          , HE.onClick \_ -> do
-                              if open v
-                                then deselect v
-                                else do
-                                  maybeHeight <- liftEffect do
-                                                   doc <- HTMLDocument.toNonElementParentNode <$> (Window.document =<< HTML.window)
-                                                   maybeMeasure <- doc # getElementById (measureId i)
-                                                   traverse offsetHeight $ maybeMeasure >>= HTMLElement.fromElement
-                                  traverse_ (Hooks.modify_ targetHeightId <<< Map.insert v) maybeHeight
-                                  select v
-                          , HE.onKeyDown $ liftEffect <<< nav
-                          ]
-                          [ triggerContent ]
+        $ HH.div
+          [ HP.id blockId ]
+          $ items
+            # mapWithIndex
+                \i (v /\ triggerContent /\ panelContent) ->
+                  HH.div
+                    [ HP.class_ $ ClassName itemClassName ]
+                    [ renderHeading
+                        []
+                        [ renderTrigger
+                            (open v)
+                            [ HP.id $ triggerId i
+                            , HPA.controls $ panelId i
+                            , HPA.expanded $ if open v then "true" else "false"
+                            , HE.onClick \_ -> do
+                                if open v
+                                  then deselect v
+                                  else do
+                                    maybeHeight <- liftEffect do
+                                                     doc <- HTMLDocument.toNonElementParentNode <$> (Window.document =<< HTML.window)
+                                                     maybeMeasure <- doc # getElementById (measureId i)
+                                                     traverse offsetHeight $ maybeMeasure >>= HTMLElement.fromElement
+                                    traverse_ (Hooks.modify_ targetHeightId <<< Map.insert v) maybeHeight
+                                    select v
+                            , HE.onKeyDown $ liftEffect <<< nav
+                            ]
+                            [ triggerContent ]
+                        ]
+                    , renderPanel
+                      { open: open v, targetHeight: Map.lookup v targetHeight <|> find (const $ not $ open v) (Just 0.0) }
+                      [ HP.id $ panelId i
+                      , HPA.role "region"
+                      , HPA.labelledBy $ triggerId i
                       ]
-                  , renderPanel
-                    { open: open v, targetHeight: Map.lookup v targetHeight <|> find (const $ not $ open v) (Just 0.0) }
-                    [ HP.id $ panelId i
-                    , HPA.role "region"
-                    , HPA.labelledBy $ triggerId i
+                      [ HH.div [HP.id $ measureId i] [panelContent] ]
                     ]
-                    [ HH.div [HP.id $ measureId i] [panelContent] ]
-                  ]
