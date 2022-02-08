@@ -157,15 +157,20 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
 
           { emitter, listener } <- liftEffect HS.create
           subscriptionId <- Hooks.subscribe emitter
-          obs <- liftEffect $ resizeObserver \entries _ -> HS.notify listener do
-                                               entries' <- catMaybes <$> for entries \{target,contentRect:{height}} -> do
-                                                                                                targetId <- liftEffect $ Element.id target
-                                                                                                case elemIndex (pure targetId) measuresIds of
-                                                                                                  Just ix ->
-                                                                                                    pure $ Just $ ix /\ height
-                                                                                                  Nothing ->
-                                                                                                    pure Nothing
-                                               Hooks.modify_ heightsId $ flip (foldr (\(ix /\ height) heights'' -> fromMaybe heights'' $ updateAt ix (pure height) heights'')) entries'
+          obs <- liftEffect $
+                   resizeObserver \entries _ ->
+                     HS.notify listener do
+                       updates <- catMaybes <$> for entries
+                                    \{target,contentRect:{height}} -> do
+                                      targetId <- liftEffect $ Element.id target
+                                      pure
+                                        $ (_ /\ height)
+                                          <$> elemIndex (pure targetId) measuresIds
+                       Hooks.modify_
+                         heightsId $
+                         flip
+                           (foldr (\(ix /\ height) heights'' -> fromMaybe heights'' $ updateAt ix (pure height) heights''))
+                           updates
           liftEffect $ traverse_ (traverse_ \el -> ResizeObserver.observe (HTMLElement.toElement el) {} obs) measures
           pure $ Just do
             liftEffect $ ResizeObserver.disconnect obs
@@ -218,8 +223,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
                 pure unit
 
       Hooks.pure
-        $ HH.div
-          [ HP.id blockId ]
+        $ HH.div_
           $ items
             # mapWithIndex
                 \i (v /\ triggerContent /\ panelContent) ->
