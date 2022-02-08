@@ -2,7 +2,7 @@ module Site.Demo.Accordion where
 
 import Prelude
 
-import CSS (StyleM, background, black, border, byClass, color, display, em, fontFamily, fontSize, hover, inlineBlock, margin, maxHeight, nil, padding, pct, pseudo, px, rem, solid, star, transitionDuration, transitionProperty, vh, width, (&), (?))
+import CSS (StyleM, background, black, border, byClass, color, display, em, fontFamily, fontSize, hover, inlineBlock, margin, nil, padding, pct, pseudo, px, rem, solid, star, transitionDuration, transitionProperty, width, (&), (?))
 import CSS.Overflow (hidden, overflow)
 import CSS.TextAlign (startTextAlign, textAlign)
 import DOM.HTML.Indexed (HTMLbutton, HTMLdiv, HTMLh3)

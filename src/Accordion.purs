@@ -2,39 +2,34 @@ module Halogen.Headless.Accordion (class SelectionMode, Single(..), Multiple(..)
 
 import Prelude
 
-import Control.Alt ((<|>))
 import DOM.HTML.Indexed (HTMLh2, HTMLbutton, HTMLdiv)
-import Data.Array (cons, elem, head, mapWithIndex, singleton, take)
+import Data.Array (cons, elem, elemIndex, head, length, mapWithIndex, singleton, take, updateAt, (..), (!!))
 import Data.Array as Array
-import Data.Foldable (find, foldr)
-import Data.Map (Map)
-import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Set as Set
 import Data.String as String
 import Data.Traversable (for_, traverse, traverse_)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
+import Effect.Ref as Ref
 import Halogen (ClassName(..))
+import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Headless.Internal.ElementId (UseElementId, useElementId)
-import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseEffect, UseState, useState)
+import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseEffect, UseRef, UseState, useRef, useState, useTickEffect)
 import Halogen.Hooks as Hooks
 import Record as Record
 import Type.Row (type (+))
 import Web.DOM.Element as Element
 import Web.DOM.NonDocumentTypeChildNode (nextElementSibling, previousElementSibling)
-import Web.DOM.NonElementParentNode (getElementById)
 import Web.DOM.ParentNode (QuerySelector(..), querySelector)
 import Web.Event.Event (currentTarget)
-import Web.HTML as HTML
-import Web.HTML.HTMLDocument as HTMLDocument
-import Web.HTML.HTMLElement (focus, offsetHeight)
+import Web.HTML.HTMLElement (focus)
 import Web.HTML.HTMLElement as HTMLElement
-import Web.HTML.Window as Window
+import Web.ResizeObserver (resizeObserver)
+import Web.ResizeObserver as ResizeObserver
 import Web.UIEvent.KeyboardEvent (KeyboardEvent, key)
 import Web.UIEvent.KeyboardEvent as KeyboardEvent
 import Web.UIEvent.MouseEvent (MouseEvent)
@@ -123,12 +118,11 @@ type Item a p i =
 
 foreign import data UseAccordion :: Type -> HookType
 
-instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> UseState (Map a Number) <> UseEffect <> Pure)
+instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> UseRef (Array (Maybe Number)) <> UseEffect <> Pure)
 
 useAccordion
   :: forall headingProps triggerProps panelProps a p m mode f
    . Eq a
-  => Ord a
   => MonadEffect m
   => SelectionMode mode f
   => Record (Options headingProps (TriggerProps triggerProps) (PanelProps panelProps) a p (HookM m Unit) mode f)
@@ -140,21 +134,36 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
       selection /\ selectionId <- useState $ fromMaybe [] (selectionToArray mode <$> valueProp)
 
       blockId <- useElementId
+
       let
         elementId s i = String.joinWith "_" [blockId, s, show i]
         triggerId = elementId "trigger"
         panelId = elementId "panel"
         measureId = elementId "measure"
 
-      targetHeight /\ targetHeightId <- useState Map.empty
+        measureRefLabel :: Int -> H.RefLabel
+        measureRefLabel = H.RefLabel <<< ("measure" <> _) <<< show
 
-      Hooks.captures
-        { selection }
-        Hooks.useTickEffect do
-          Hooks.modify_
-            targetHeightId
-            \targetHeight' -> foldr Map.delete targetHeight' $ Set.filter (\k -> not $ k `elem` selection) $ Map.keys targetHeight'
-          pure Nothing
+      heights /\ heightsRef <- useRef []
+
+      Hooks.capturesWith
+        (\a b -> length a.items == length b.items)
+        { items }
+        useTickEffect do
+          measures <- traverse (Hooks.getHTMLElementRef <<< measureRefLabel) $ 0 .. (length items - 1)
+          measuresIds <- liftEffect $ traverse (traverse (Element.id <<< HTMLElement.toElement)) measures
+          heights' <- traverse (traverse $ liftEffect <<< HTMLElement.offsetHeight) measures
+          liftEffect $ Ref.write heights' heightsRef
+          obs <- liftEffect $ resizeObserver \entries _ ->
+                                               for_ entries \{target,contentRect:{height}} -> do
+                                                                                          targetId <- Element.id target
+                                                                                          case elemIndex (pure targetId) measuresIds of
+                                                                                            Just ix ->
+                                                                                              Ref.modify_ (\heights'' -> fromMaybe heights'' $ updateAt ix (pure height) heights'') heightsRef
+                                                                                            Nothing ->
+                                                                                              pure unit
+          liftEffect $ traverse_ (traverse_ \el -> ResizeObserver.observe (HTMLElement.toElement el) {} obs) measures
+          pure $ Just $ liftEffect $ ResizeObserver.disconnect obs
 
       let
 
@@ -217,25 +226,16 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
                             [ HP.id $ triggerId i
                             , HPA.controls $ panelId i
                             , HPA.expanded $ if open v then "true" else "false"
-                            , HE.onClick \_ -> do
-                                if open v
-                                  then deselect v
-                                  else do
-                                    maybeHeight <- liftEffect do
-                                                     doc <- HTMLDocument.toNonElementParentNode <$> (Window.document =<< HTML.window)
-                                                     maybeMeasure <- doc # getElementById (measureId i)
-                                                     traverse offsetHeight $ maybeMeasure >>= HTMLElement.fromElement
-                                    traverse_ (Hooks.modify_ targetHeightId <<< Map.insert v) maybeHeight
-                                    select v
+                            , HE.onClick \_ -> v # if open v then deselect else select
                             , HE.onKeyDown $ liftEffect <<< nav
                             ]
                             [ triggerContent ]
                         ]
                     , renderPanel
-                      { open: open v, targetHeight: Map.lookup v targetHeight <|> find (const $ not $ open v) (Just 0.0) }
+                      { open: open v, targetHeight: if not (open v) then Just 0.0 else join $ heights !! i }
                       [ HP.id $ panelId i
                       , HPA.role "region"
                       , HPA.labelledBy $ triggerId i
                       ]
-                      [ HH.div [HP.id $ measureId i] [panelContent] ]
+                      [ HH.div [HP.id $ measureId i, HP.ref $ measureRefLabel i] [panelContent] ]
                     ]
