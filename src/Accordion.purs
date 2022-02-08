@@ -118,7 +118,7 @@ type Item a p i =
 
 foreign import data UseAccordion :: Type -> HookType
 
-instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> UseState (Array (Maybe Number)) <> UseEffect <> Pure)
+instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> UseState (Array (Maybe Number)) <> UseEffect <> UseEffect <> Pure)
 
 useAccordion
   :: forall headingProps triggerProps panelProps a p m mode f
@@ -175,6 +175,11 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
           pure $ Just do
             liftEffect $ ResizeObserver.disconnect obs
             Hooks.unsubscribe subscriptionId
+
+      Hooks.capturesWith
+        (\a b -> length a.items == length b.items && length a.heights == length b.heights)
+        { items, heights }
+        useTickEffect $ (Hooks.modify_ heightsId $ take $ length items) *> pure Nothing
 
       let
 
