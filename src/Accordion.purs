@@ -3,19 +3,23 @@ module Halogen.Headless.Accordion (class SelectionMode, Single(..), Multiple(..)
 import Prelude
 
 import DOM.HTML.Indexed (HTMLh2, HTMLbutton, HTMLdiv)
-import Data.Array (cons, elem, filter, head, length, mapWithIndex, singleton, take, (!!))
-import Data.Foldable (for_, traverse_)
+import Data.Array (catMaybes, cons, elem, elemIndex, foldr, head, length, mapWithIndex, singleton, take, updateAt, (!!), (..))
+import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.String as String
+import Data.Traversable (for, for_, traverse, traverse_)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
 import Halogen (ClassName(..))
+import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.HTML.Properties.ARIA as HPA
-import Halogen.Headless.Internal.ElementId (UseElementIds, useElementIds)
-import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseState, useState)
+import Halogen.Headless.Internal.ElementId (UseElementId, useElementId)
+import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseEffect, UseState, useState, useTickEffect)
 import Halogen.Hooks as Hooks
+import Halogen.Subscription as HS
 import Record as Record
 import Type.Row (type (+))
 import Web.DOM.Element as Element
@@ -24,6 +28,8 @@ import Web.DOM.ParentNode (QuerySelector(..), querySelector)
 import Web.Event.Event (currentTarget)
 import Web.HTML.HTMLElement (focus)
 import Web.HTML.HTMLElement as HTMLElement
+import Web.ResizeObserver (resizeObserver)
+import Web.ResizeObserver as ResizeObserver
 import Web.UIEvent.KeyboardEvent (KeyboardEvent, key)
 import Web.UIEvent.KeyboardEvent as KeyboardEvent
 import Web.UIEvent.MouseEvent (MouseEvent)
@@ -41,7 +47,7 @@ type Open = Boolean
 type RenderOptions headingProps triggerProps panelProps p i r =
   ( renderHeading :: Render headingProps p i
   , renderTrigger :: Open -> Render triggerProps p i
-  , renderPanel :: Open -> Render panelProps p i
+  , renderPanel :: { open :: Boolean, targetHeight :: Maybe Number } -> Render panelProps p i
   | r
   )
 
@@ -51,7 +57,7 @@ defaultRenderOptions
 defaultRenderOptions =
   { renderHeading: HH.h2
   , renderTrigger: const HH.button
-  , renderPanel: \open p -> HH.div (p <> if open then [] else [HP.style "display:none"])
+  , renderPanel: \{ open } p -> HH.div (p <> if open then [] else [HP.style "display:none"])
   }
 
 type ValueOptions :: forall k. (k -> Type) -> k -> Type -> Row Type -> Row Type
@@ -112,7 +118,7 @@ type Item a p i =
 
 foreign import data UseAccordion :: Type -> HookType
 
-instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementIds <> Pure)
+instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> UseState (Array (Maybe Number)) <> UseEffect <> UseEffect <> Pure)
 
 useAccordion
   :: forall headingProps triggerProps panelProps a p m mode f
@@ -126,9 +132,61 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
   Hooks.wrap $
     Hooks.do
       selection /\ selectionId <- useState $ fromMaybe [] (selectionToArray mode <$> valueProp)
-      elementIds <- useElementIds $ length items * 2
+
+      blockId <- useElementId
+
       let
+        elementId s i = String.joinWith "_" [blockId, s, show i]
+        triggerId = elementId "trigger"
+        panelId = elementId "panel"
+        measureId = elementId "measure"
+
+        measureRefLabel :: Int -> H.RefLabel
+        measureRefLabel = H.RefLabel <<< ("measure" <> _) <<< show
+
+      heights /\ heightsId <- useState []
+
+      Hooks.capturesWith
+        (\a b -> length a.items == length b.items)
+        { items }
+        useTickEffect do
+          measures <- traverse (Hooks.getHTMLElementRef <<< measureRefLabel) $ 0 .. (length items - 1)
+          measuresIds <- liftEffect $ traverse (traverse (Element.id <<< HTMLElement.toElement)) measures
+          heights' <- traverse (traverse $ liftEffect <<< HTMLElement.offsetHeight) measures
+          Hooks.put heightsId heights'
+
+          { emitter, listener } <- liftEffect HS.create
+          subscriptionId <- Hooks.subscribe emitter
+          obs <- liftEffect $
+                   resizeObserver \entries _ ->
+                     HS.notify listener do
+                       updates <- catMaybes <$> for entries
+                                    \{target,contentRect:{height}} -> do
+                                      targetId <- liftEffect $ Element.id target
+                                      pure
+                                        $ (_ /\ height)
+                                          <$> elemIndex (pure targetId) measuresIds
+                       Hooks.modify_
+                         heightsId $
+                         flip
+                           (foldr (\(ix /\ height) heights'' -> fromMaybe heights'' $ updateAt ix (pure height) heights''))
+                           updates
+          liftEffect $ traverse_ (traverse_ \el -> ResizeObserver.observe (HTMLElement.toElement el) {} obs) measures
+          pure $ Just do
+            liftEffect $ ResizeObserver.disconnect obs
+            Hooks.unsubscribe subscriptionId
+
+      Hooks.capturesWith
+        (\a b -> length a.items == length b.items && length a.heights == length b.heights)
+        { items, heights }
+        useTickEffect $ (Hooks.modify_ heightsId $ take $ length items) *> pure Nothing
+
+      let
+
         value = fromMaybe selection (selectionToArray mode <$> valueProp)
+
+        open = flip elem value
+
         handler f s = do
           sel <- Hooks.modify selectionId $ f s
           case onValueChange of
@@ -136,8 +194,11 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
               onValueChange' $ selectionFromArray mode sel
             Nothing ->
               pure unit
+
         select = handler \x -> (fromMaybe identity $ take <$> selectionLimit mode) <<< cons x
-        deselect = handler \s -> filter (_ /= s)
+
+        deselect = handler \s -> Array.filter (_ /= s)
+
         nav e =
           let
             selectSibling f =
@@ -165,35 +226,31 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
                   selectSibling go
               _ ->
                 pure unit
+
       Hooks.pure
         $ HH.div_
-        $ items
-          # mapWithIndex
-              \i (v /\ triggerContent /\ panelContent) ->
-                let
-                  open = v `elem` value
-                  triggerId = fromMaybe "trigger" $ elementIds !! i
-                  panelId = fromMaybe "trigger" $ elementIds !! (i + length items)
-                in
+          $ items
+            # mapWithIndex
+                \i (v /\ triggerContent /\ panelContent) ->
                   HH.div
                     [ HP.class_ $ ClassName itemClassName ]
                     [ renderHeading
                         []
                         [ renderTrigger
-                            open
-                            [ HP.id triggerId
-                            , HPA.controls panelId
-                            , HPA.expanded $ if open then "true" else "false"
-                            , HE.onClick \_ -> v # if open then deselect else select
+                            (open v)
+                            [ HP.id $ triggerId i
+                            , HPA.controls $ panelId i
+                            , HPA.expanded $ if open v then "true" else "false"
+                            , HE.onClick \_ -> v # if open v then deselect else select
                             , HE.onKeyDown $ liftEffect <<< nav
                             ]
                             [ triggerContent ]
                         ]
                     , renderPanel
-                        open
-                        [ HP.id panelId
-                        , HPA.role "region"
-                        , HPA.labelledBy triggerId
-                        ]
-                        [ panelContent ]
+                      { open: open v, targetHeight: if not (open v) then Just 0.0 else join $ heights !! i }
+                      [ HP.id $ panelId i
+                      , HPA.role "region"
+                      , HPA.labelledBy $ triggerId i
+                      ]
+                      [ HH.div [HP.id $ measureId i, HP.ref $ measureRefLabel i] [panelContent] ]
                     ]

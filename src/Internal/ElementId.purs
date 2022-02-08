@@ -10,14 +10,14 @@ import Effect.Class (class MonadEffect, liftEffect)
 import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookType, Pure, UseEffect, UseState, useLifecycleEffect, useState)
 import Halogen.Hooks as Hooks
 
-foreign import data UseElementIds :: HookType
+foreign import data UseElementId :: HookType
 
 foreign import elementId :: Effect String
 
-instance newtypeUseElementIds :: HookNewtype UseElementIds (UseState (Array String) <> UseEffect <> Pure)
+instance newtypeUseElementId :: HookNewtype UseElementId (UseState String <> UseEffect <> Pure)
 
-useElementIds :: forall m. MonadEffect m => Int -> Hook m UseElementIds (Array String)
-useElementIds n = Hooks.wrap $ Hooks.do
-  value /\ valueId <- useState []
-  useLifecycleEffect $ ((liftEffect (replicateA n elementId)) >>= Hooks.put valueId) *> pure Nothing
+useElementId :: forall m. MonadEffect m => Hook m UseElementId String
+useElementId = Hooks.wrap $ Hooks.do
+  value /\ valueId <- useState mempty
+  useLifecycleEffect $ (liftEffect elementId >>= Hooks.put valueId) *> pure Nothing
   Hooks.pure value
