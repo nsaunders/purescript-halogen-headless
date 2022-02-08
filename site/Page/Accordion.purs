@@ -74,14 +74,16 @@ type Styles a =
 
 styles :: Styles String
 styles =
-  { heading: "heading"
-  , trigger: "trigger"
-  , triggerIndicator: "trigger-indicator"
-  , panel: "panel"
-  , panelClosed: "panel-closed"
-  , panelOpen: "panel-open"
-  , content: "content"
-  }
+  mapRecord
+    ("accordion__" <> _)
+    { heading: "heading"
+    , trigger: "trigger"
+    , triggerIndicator: "trigger-indicator"
+    , panel: "panel"
+    , panelClosed: "panel-closed"
+    , panelOpen: "panel-open"
+    , content: "content"
+    }
 
 css :: StyleM Unit
 css = do
