@@ -9,8 +9,8 @@ import Foreign.Object (insert)
 import Halogen.Aff as HA
 import Halogen.HTML as HH
 import Halogen.Storybook (Stories, runStorybook)
-import Site.Index as Index
-import Site.Demo.Accordion as Accordion
+import Site.Page.Accordion as Accordion
+import Site.Page.Index as Index
 
 pages :: forall m. MonadEffect m => Stories m
 pages =

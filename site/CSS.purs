@@ -9,7 +9,7 @@ import Effect.Class.Console (log, warn)
 import Effect.Exception (throwException)
 import Node.Encoding (Encoding(..))
 import Node.FS.Async (writeTextFile)
-import Site.Demo.Accordion as Accordion
+import Site.Page.Accordion as Accordion
 
 main :: Effect Unit
 main =

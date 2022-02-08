@@ -1,4 +1,4 @@
-module Site.Demo.Accordion where
+module Site.Page.Accordion where
 
 import Prelude
 
