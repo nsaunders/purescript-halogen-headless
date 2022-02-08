@@ -3,7 +3,5 @@
 .trigger:hover { background: hsl(210.0, 97.9%, 36.9%) }
 .trigger:active { background: hsl(210.0, 98.7%, 29.4%) }
 .trigger-indicator { font-family: "Noto Sans Mono", sans-serif; display: inline-block; width: 1.0em }
-.panel { overflow: hidden; transition-property: max-height; transition-duration: 250ms }
-.panel-closed { max-height: 0.125rem }
-.panel-open { max-height: 100.0vh }
+.panel { overflow: hidden; transition-property: height; transition-duration: 250ms }
 .content { padding: 1.0rem 1.0rem 1.0rem 1.0rem  }
