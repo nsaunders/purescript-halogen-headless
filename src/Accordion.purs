@@ -3,14 +3,13 @@ module Halogen.Headless.Accordion (class SelectionMode, Single(..), Multiple(..)
 import Prelude
 
 import DOM.HTML.Indexed (HTMLh2, HTMLbutton, HTMLdiv)
-import Data.Array (cons, elem, elemIndex, head, length, mapWithIndex, singleton, take, updateAt, (..), (!!))
+import Data.Array (catMaybes, cons, elem, elemIndex, foldr, head, length, mapWithIndex, singleton, take, updateAt, (!!), (..))
 import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String as String
-import Data.Traversable (for_, traverse, traverse_)
+import Data.Traversable (for, for_, traverse, traverse_)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
-import Effect.Ref as Ref
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -18,8 +17,9 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Headless.Internal.ElementId (UseElementId, useElementId)
-import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseEffect, UseRef, UseState, useRef, useState, useTickEffect)
+import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookM, HookType, Pure, UseEffect, UseState, useState, useTickEffect)
 import Halogen.Hooks as Hooks
+import Halogen.Subscription as HS
 import Record as Record
 import Type.Row (type (+))
 import Web.DOM.Element as Element
@@ -118,7 +118,7 @@ type Item a p i =
 
 foreign import data UseAccordion :: Type -> HookType
 
-instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> UseRef (Array (Maybe Number)) <> UseEffect <> Pure)
+instance HookNewtype (UseAccordion a) (UseState (Array a) <> UseElementId <> UseState (Array (Maybe Number)) <> UseEffect <> Pure)
 
 useAccordion
   :: forall headingProps triggerProps panelProps a p m mode f
@@ -144,7 +144,7 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
         measureRefLabel :: Int -> H.RefLabel
         measureRefLabel = H.RefLabel <<< ("measure" <> _) <<< show
 
-      heights /\ heightsRef <- useRef []
+      heights /\ heightsId <- useState []
 
       Hooks.capturesWith
         (\a b -> length a.items == length b.items)
@@ -153,17 +153,23 @@ useAccordion { renderHeading, renderTrigger, renderPanel, mode, value: valueProp
           measures <- traverse (Hooks.getHTMLElementRef <<< measureRefLabel) $ 0 .. (length items - 1)
           measuresIds <- liftEffect $ traverse (traverse (Element.id <<< HTMLElement.toElement)) measures
           heights' <- traverse (traverse $ liftEffect <<< HTMLElement.offsetHeight) measures
-          liftEffect $ Ref.write heights' heightsRef
-          obs <- liftEffect $ resizeObserver \entries _ ->
-                                               for_ entries \{target,contentRect:{height}} -> do
-                                                                                          targetId <- Element.id target
-                                                                                          case elemIndex (pure targetId) measuresIds of
-                                                                                            Just ix ->
-                                                                                              Ref.modify_ (\heights'' -> fromMaybe heights'' $ updateAt ix (pure height) heights'') heightsRef
-                                                                                            Nothing ->
-                                                                                              pure unit
+          Hooks.put heightsId heights'
+
+          { emitter, listener } <- liftEffect HS.create
+          subscriptionId <- Hooks.subscribe emitter
+          obs <- liftEffect $ resizeObserver \entries _ -> HS.notify listener do
+                                               entries' <- catMaybes <$> for entries \{target,contentRect:{height}} -> do
+                                                                                                targetId <- liftEffect $ Element.id target
+                                                                                                case elemIndex (pure targetId) measuresIds of
+                                                                                                  Just ix ->
+                                                                                                    pure $ Just $ ix /\ height
+                                                                                                  Nothing ->
+                                                                                                    pure Nothing
+                                               Hooks.modify_ heightsId $ flip (foldr (\(ix /\ height) heights'' -> fromMaybe heights'' $ updateAt ix (pure height) heights'')) entries'
           liftEffect $ traverse_ (traverse_ \el -> ResizeObserver.observe (HTMLElement.toElement el) {} obs) measures
-          pure $ Just $ liftEffect $ ResizeObserver.disconnect obs
+          pure $ Just do
+            liftEffect $ ResizeObserver.disconnect obs
+            Hooks.unsubscribe subscriptionId
 
       let
 
