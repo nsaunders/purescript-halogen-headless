@@ -12079,7 +12079,37 @@ var PS = {};
   var Halogen_Hooks_HookM = $PS["Halogen.Hooks.HookM"];
   var Record_Extra = $PS["Record.Extra"];
   var Web_HTML_Common = $PS["Web.HTML.Common"];                
-  var styles = {
+  var styles = Record_Extra.mapRecord()(Record_Extra.mapRecordCons({
+      reflectSymbol: function () {
+          return "content";
+      }
+  })()(Record_Extra.mapRecordCons({
+      reflectSymbol: function () {
+          return "heading";
+      }
+  })()(Record_Extra.mapRecordCons({
+      reflectSymbol: function () {
+          return "panel";
+      }
+  })()(Record_Extra.mapRecordCons({
+      reflectSymbol: function () {
+          return "panelClosed";
+      }
+  })()(Record_Extra.mapRecordCons({
+      reflectSymbol: function () {
+          return "panelOpen";
+      }
+  })()(Record_Extra.mapRecordCons({
+      reflectSymbol: function () {
+          return "trigger";
+      }
+  })()(Record_Extra.mapRecordCons({
+      reflectSymbol: function () {
+          return "triggerIndicator";
+      }
+  })()(Record_Extra.mapRecordNil)()())()())()())()())()())()())()())(function (v) {
+      return "accordion__" + v;
+  })({
       heading: "heading",
       trigger: "trigger",
       triggerIndicator: "trigger-indicator",
@@ -12087,7 +12117,7 @@ var PS = {};
       panelClosed: "panel-closed",
       panelOpen: "panel-open",
       content: "content"
-  };
+  });
   var hstyles = Record_Extra.mapRecord()(Record_Extra.mapRecordCons({
       reflectSymbol: function () {
           return "content";

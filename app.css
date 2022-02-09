@@ -1,7 +1,7 @@
-.heading { margin: 0 0 0 0  }
-.trigger { margin: 0 0 0 0 ; padding: 0.5rem 1.0rem 0.5rem 1.0rem ; width: 100.0%; border: solid 0.0px hsl(0.0, 0.0%, 0.0%) ; text-align: start; font-family: "Noto Sans", sans-serif; font-size: 1.0rem; background: hsl(210.0, 98.2%, 44.1%); color: hsl(210.0, 92.3%, 94.9%) }
-.trigger:hover { background: hsl(210.0, 97.9%, 36.9%) }
-.trigger:active { background: hsl(210.0, 98.7%, 29.4%) }
-.trigger-indicator { font-family: "Noto Sans Mono", sans-serif; display: inline-block; width: 1.0em }
-.panel { overflow: hidden; transition-property: height; transition-duration: 250ms }
-.content { padding: 1.0rem 1.0rem 1.0rem 1.0rem  }
+.accordion__heading { margin: 0 0 0 0  }
+.accordion__trigger { margin: 0 0 0 0 ; padding: 0.5rem 1.0rem 0.5rem 1.0rem ; width: 100.0%; border: solid 0.0px hsl(0.0, 0.0%, 0.0%) ; text-align: start; font-family: "Noto Sans", sans-serif; font-size: 1.0rem; background: hsl(210.0, 98.2%, 44.1%); color: hsl(210.0, 92.3%, 94.9%) }
+.accordion__trigger:hover { background: hsl(210.0, 97.9%, 36.9%) }
+.accordion__trigger:active { background: hsl(210.0, 98.7%, 29.4%) }
+.accordion__trigger-indicator { font-family: "Noto Sans Mono", sans-serif; display: inline-block; width: 1.0em }
+.accordion__panel { overflow: hidden; transition-property: height; transition-duration: 250ms }
+.accordion__content { padding: 1.0rem 1.0rem 1.0rem 1.0rem  }
