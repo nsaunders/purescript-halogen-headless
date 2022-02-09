@@ -2,7 +2,7 @@ module Site.Page.Accordion where
 
 import Prelude
 
-import CSS (StyleM, background, black, border, byClass, color, display, em, fontFamily, fontSize, hover, inlineBlock, margin, nil, padding, pct, pseudo, px, rem, solid, star, transitionDuration, transitionProperty, width, (&), (?))
+import CSS (StyleM, background, black, border, byClass, color, display, em, fontFamily, fontSize, height, hover, inlineBlock, margin, nil, padding, pct, pseudo, px, rem, solid, star, transitionDuration, transitionProperty, width, (&), (?))
 import CSS.Overflow (hidden, overflow)
 import CSS.TextAlign (startTextAlign, textAlign)
 import DOM.HTML.Indexed (HTMLbutton, HTMLdiv, HTMLh3)
@@ -16,6 +16,7 @@ import Foreign.Object as Object
 import Halogen (Component)
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.CSS as HC
 import Halogen.HTML.Properties as HP
 import Halogen.Headless.Accordion (useAccordion)
 import Halogen.Headless.Accordion as Accordion
@@ -141,7 +142,7 @@ renderPanel
   -> HH.HTML p i
 renderPanel { targetHeight } props content =
   HH.div
-    ([ HP.class_ hstyles.panel, HP.style $ fromMaybe "" $ (\h -> "height: " <> show h <> "px") <$> targetHeight ] <> props)
+    ([ HP.class_ hstyles.panel, HC.style $ fromMaybe (pure unit) $ height <<< px <$> targetHeight ] <> props)
     content
 
 singleUncontrolled :: forall q i o m. MonadEffect m => Component q i o m
