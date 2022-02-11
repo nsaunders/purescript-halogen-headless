@@ -2,15 +2,18 @@
   "private": true,
   "scripts": {
     "build": "spago build",
-    "bundle": "spago -x site.dhall bundle-app -m Site.Main --to ./public/app.js --then \"spago -x site-css.dhall run -m Site.CSS\"",
+    "bundle": "spago -x site.dhall bundle-app -m Site.Main --to ./temp/app.js --then \"spago -x site-css.dhall run -m Site.CSS -a '--to ./temp/app.css'\" --then \"cpy ./temp/* ./public\" --then \"rimraf ./temp\"",
     "format": "purs-tidy format-in-place site/**/*.purs src/**/*.purs test/**/*.purs",
     "postinstall": "spago install && spago -x site.dhall install && spago -x site-css.dhall install",
     "server": "live-server --no-browser ./public"
   },
   "devDependencies": {
+    "cpy-cli": "^3.1.1",
     "live-server": "^1.2.1",
     "purescript": "^0.14.5",
     "purs-tidy": "^0.7.0",
+    "rimraf": "^3.0.2",
     "spago": "^0.20.3"
-  }
+  },
+  "dependencies": {}
 }
