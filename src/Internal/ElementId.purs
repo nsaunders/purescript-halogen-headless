@@ -4,7 +4,6 @@ import Prelude
 
 import Data.Maybe (Maybe(Nothing))
 import Data.Tuple.Nested ((/\))
-import Data.Unfoldable (replicateA)
 import Effect (Effect)
 import Effect.Class (class MonadEffect, liftEffect)
 import Halogen.Hooks (class HookNewtype, type (<>), Hook, HookType, Pure, UseEffect, UseState, useLifecycleEffect, useState)
