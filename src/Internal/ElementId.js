@@ -1,8 +1,8 @@
 var key = "halogenHeadlessElementId";
 
-exports.elementId = function() {
+export function elementId() {
   if (!window[key]) {
-    window[key] = 0;
+    window[key] = Number.MIN_SAFE_INTEGER;
   }
   return "hhe_" + window[key]++;
 };

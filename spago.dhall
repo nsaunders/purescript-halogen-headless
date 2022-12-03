@@ -13,7 +13,6 @@
   , "strings"
   , "tuples"
   , "typelevel-prelude"
-  , "unfoldable"
   , "web-dom"
   , "web-events"
   , "web-html"
