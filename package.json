@@ -10,10 +10,6 @@
   "devDependencies": {
     "cpy-cli": "^3.1.1",
     "live-server": "^1.2.1",
-    "purescript": "^0.14.5",
-    "purs-tidy": "^0.7.0",
-    "rimraf": "^3.0.2",
-    "spago": "^0.20.3"
-  },
-  "dependencies": {}
+    "rimraf": "^3.0.2"
+  }
 }
