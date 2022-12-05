@@ -1,15 +1,15 @@
 module Site.Theme where
 
-import CSS (GenericFontFamily, sansSerif)
-import Data.Tuple.Nested (type (/\), (/\))
 import Color (Color, hsl)
-import Data.NonEmpty (NonEmpty, singleton)
+import Data.Tuple.Nested (type (/\), (/\))
+import Tecton (monospace, sansSerif)
+import Type.Proxy (Proxy)
 
-sans :: Array String /\ NonEmpty Array GenericFontFamily
-sans = ["Noto Sans"] /\ singleton sansSerif
+sans :: String /\ Proxy "sans-serif"
+sans = "Noto Sans" /\ sansSerif
 
-mono :: Array String /\ NonEmpty Array GenericFontFamily
-mono = ["Noto Sans Mono"] /\ singleton sansSerif
+mono :: String /\ Proxy "monospace"
+mono = "Noto Sans Mono" /\ monospace
 
 blue100 = hsl 210.0 0.923 0.949 :: Color
 blue200 = hsl 210.0 0.938 0.873 :: Color
