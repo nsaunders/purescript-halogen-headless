@@ -4,9 +4,9 @@ import Prelude
 
 import Data.Array (elemIndex, (!!))
 import Data.Either (either)
-import Data.Maybe (fromMaybe, maybe)
+import Data.Maybe (fromMaybe)
 import Effect (Effect)
-import Effect.Class.Console (log, warn)
+import Effect.Class.Console (log)
 import Effect.Exception (throwException)
 import Node.Encoding (Encoding(..))
 import Node.FS.Async (writeTextFile)
