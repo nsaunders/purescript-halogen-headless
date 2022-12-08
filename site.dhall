@@ -1,7 +1,7 @@
 let conf = ./spago.dhall
 
 in conf // {
-  sources = conf.sources # ["site/Page/**/*.purs", "site/Main.purs", "site/Theme.purs"],
+  sources = conf.sources # ["site/**/*.purs"],
   dependencies =
     conf.dependencies #
       [ "colors"

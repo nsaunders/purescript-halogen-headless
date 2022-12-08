@@ -61,16 +61,6 @@ items =
     <#>
       \(Tuple v (Tuple q a)) -> v /\ HH.text q /\ HH.div [ HP.class_ contentClass ] [ HH.text a ]
 
-type Styles a =
-  { heading :: a
-  , trigger :: a
-  , triggerIndicator :: a
-  , panel :: a
-  , panelClosed :: a
-  , panelOpen :: a
-  , content :: a
-  }
-
 headingClass = ClassName "accordion__heading" :: ClassName
 triggerClass = ClassName "accordion__trigger" :: ClassName
 triggerIndicatorClass = ClassName "accordion__trigger-indicator" :: ClassName

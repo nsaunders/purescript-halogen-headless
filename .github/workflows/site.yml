@@ -6,18 +6,40 @@ on:
       - master
 
 jobs:
-  deploy:
+  publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+
+      - name: Set up a PureScript toolchain
+        uses: purescript-contrib/setup-purescript@main
         with:
-          node-version: '16'
-      - name: install dependencies
-        run: npm install
-      - name: build site
+          purescript: "unstable"
+          purs-tidy: "latest"
+
+      - name: Cache PureScript dependencies
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-spago-${{ hashFiles('**/*.dhall') }}
+          path: |
+            .spago
+            output
+
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          path: node_modules
+
+      - name: Install PureScript dependencies
+        run: spago -x site.dhall install
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Build
         run: npm run bundle
-      - name: publish
+
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/master'
         with:
