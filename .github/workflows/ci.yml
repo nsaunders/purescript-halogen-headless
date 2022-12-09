@@ -21,7 +21,7 @@ jobs:
           purs-tidy: "latest"
 
       - name: Check formatting
-        run: purs-tidy check src test
+        run: purs-tidy check site src test
 
       - name: Cache PureScript dependencies
         uses: actions/cache@v2

@@ -1,11 +1,12 @@
 module Site.Main where
 
 import Prelude
+
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Class (class MonadEffect)
-import Foreign.Object as Object
 import Foreign.Object (insert)
+import Foreign.Object as Object
 import Halogen.Aff as HA
 import Halogen.HTML as HH
 import Halogen.Storybook (Stories, runStorybook)

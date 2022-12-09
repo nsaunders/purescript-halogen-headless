@@ -19,7 +19,9 @@ component = Hooks.component \_ _ ->
          Halogen Headless is a new, work-in-progress component library for
          """
           , HH.a
-              [ HP.href "https://github.com/purescript-halogen/purescript-halogen" ]
+              [ HP.href
+                  "https://github.com/purescript-halogen/purescript-halogen"
+              ]
               [ HH.text "Halogen" ]
           , HH.text
               """

@@ -4,7 +4,58 @@ import Prelude
 
 import Color (rgb, rgba)
 import Data.Tuple.Nested ((/\))
-import Tecton (CSS, alignItems, auto, backgroundColor, block, body, bold, borderBottomStyle, borderLeftStyle, borderStyle, borderTopStyle, borderWidth, center, color, display, flex, fontFamily, fontSize, fontWeight, fr, grid, gridColumnStart, gridRowEnd, gridRowStart, gridTemplateColumns, gridTemplateRows, height, hover, listStyleType, margin, nil, none, overflow, overflowY, padding, paddingLeft, px, rem, sansSerif, solid, textDecorationLine, textTransform, universal, uppercase, vh, (&.), (&:), (:=), (?), (~))
+import Tecton
+  ( CSS
+  , alignItems
+  , auto
+  , backgroundColor
+  , block
+  , body
+  , bold
+  , borderBottomStyle
+  , borderLeftStyle
+  , borderStyle
+  , borderTopStyle
+  , borderWidth
+  , center
+  , color
+  , display
+  , flex
+  , fontFamily
+  , fontSize
+  , fontWeight
+  , fr
+  , grid
+  , gridColumnStart
+  , gridRowEnd
+  , gridRowStart
+  , gridTemplateColumns
+  , gridTemplateRows
+  , height
+  , hover
+  , listStyleType
+  , margin
+  , nil
+  , none
+  , overflow
+  , overflowY
+  , padding
+  , paddingLeft
+  , px
+  , rem
+  , sansSerif
+  , solid
+  , textDecorationLine
+  , textTransform
+  , universal
+  , uppercase
+  , vh
+  , (&.)
+  , (&:)
+  , (:=)
+  , (?)
+  , (~)
+  )
 import Tecton.Internal (borderColor)
 import Tecton.Rule as Rule
 
@@ -41,7 +92,7 @@ css = do
     listStyleType := none
     margin := nil
     padding := nil
-  universal &. "Storybook-nav-section" ?
+  universal &. "Storybook-nav-section" ? Rule.do
     margin := rem 1 ~ nil
   universal &. "Storybook-nav-section-title" ? Rule.do
     color := rgb 58 58 58
@@ -55,8 +106,8 @@ css = do
     -- wordWrap := breakWord -- TODO
     color := rgb 40 40 40
   ( universal &. "Storybook-link" &: hover
-    /\ universal &. "Storybook-link" &. "is-active"
-  ) ?
+      /\ universal &. "Storybook-link" &. "is-active"
+  ) ? Rule.do
     color := rgb 0 140 255
   universal &. "Storybook-main" ? Rule.do
     gridColumnStart := 2

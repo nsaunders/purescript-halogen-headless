@@ -19,7 +19,40 @@ import Halogen.Hooks (useState)
 import Halogen.Hooks as Hooks
 import Halogen.Storybook (Stories)
 import Site.Theme as Theme
-import Tecton (CSS, active, backgroundColor, borderStyle, color, display, em, fontFamily, fontSize, height, hidden, inlineBlock, hover, margin, ms, nil, none, overflow, padding, pct, px, rem, start, textAlign, transitionDuration, transitionProperty, universal, width, (&:), (?), (:=), (~))
+import Tecton
+  ( CSS
+  , active
+  , backgroundColor
+  , borderStyle
+  , color
+  , display
+  , em
+  , fontFamily
+  , fontSize
+  , height
+  , hidden
+  , hover
+  , inlineBlock
+  , margin
+  , ms
+  , nil
+  , none
+  , overflow
+  , padding
+  , pct
+  , px
+  , rem
+  , start
+  , textAlign
+  , transitionDuration
+  , transitionProperty
+  , universal
+  , width
+  , (&:)
+  , (:=)
+  , (?)
+  , (~)
+  )
 import Tecton.Halogen ((&.))
 import Tecton.Halogen as TH
 import Tecton.Rule as Rule
@@ -59,7 +92,9 @@ items =
     """
   ]
     <#>
-      \(Tuple v (Tuple q a)) -> v /\ HH.text q /\ HH.div [ HP.class_ contentClass ] [ HH.text a ]
+      \(Tuple v (Tuple q a)) -> v /\ HH.text q /\ HH.div
+        [ HP.class_ contentClass ]
+        [ HH.text a ]
 
 headingClass = ClassName "accordion__heading" :: ClassName
 triggerClass = ClassName "accordion__trigger" :: ClassName
@@ -71,8 +106,9 @@ contentClass = ClassName "accordion__content" :: ClassName
 
 css :: CSS
 css = do
-  universal &. headingClass ?
-    margin := nil
+  universal &. headingClass
+    ? margin
+    := nil
   universal &. triggerClass ? Rule.do
     margin := nil
     padding := rem 0.5 ~ rem 1
@@ -83,10 +119,12 @@ css = do
     fontSize := rem 1.0
     backgroundColor := Theme.blue600
     color := Theme.blue100
-  universal &. triggerClass &: hover ?
-    backgroundColor := Theme.blue700
-  universal &. triggerClass &: active ?
-    backgroundColor := Theme.blue800
+  universal &. triggerClass &: hover
+    ? backgroundColor
+    := Theme.blue700
+  universal &. triggerClass &: active
+    ? backgroundColor
+    := Theme.blue800
   universal &. triggerIndicatorClass ? Rule.do
     fontFamily := Theme.mono
     display := inlineBlock
@@ -115,7 +153,9 @@ renderTrigger
 renderTrigger open props content =
   HH.button
     (HP.class_ triggerClass : props)
-    (HH.div [ HP.class_ triggerIndicatorClass ] [ HH.text (if open then "-" else "+") ] : content)
+    ( HH.div [ HP.class_ triggerIndicatorClass ]
+        [ HH.text (if open then "-" else "+") ] : content
+    )
 
 renderPanel
   :: forall p i
@@ -125,10 +165,9 @@ renderPanel
   -> HH.HTML p i
 renderPanel { targetHeight } props content =
   HH.div
-    (
-      props
-      <> [ HP.class_ panelClass ]
-      <> ( maybe [] (\h -> [TH.style $ height := px h]) targetHeight )
+    ( props
+        <> [ HP.class_ panelClass ]
+        <> (maybe [] (\h -> [ TH.style $ height := px h ]) targetHeight)
     )
     content
 
