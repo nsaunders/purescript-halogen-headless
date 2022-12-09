@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "bundle": "node -e \"var fs=require('fs');var path=require('path');require('mkdirp')(path.resolve(process.cwd(), 'public'));fs.writeFileSync(path.resolve(process.cwd(), 'public', 'CNAME'), 'halogen-headless.purescri.pt');\" && spago -x site.dhall build --then \"webpack --env production\"",
+    "bundle": "node -e \"var fs=require('fs');var path=require('path');require('mkdirp').sync(path.resolve(process.cwd(), 'public'));fs.writeFileSync(path.resolve(process.cwd(), 'public', 'CNAME'), 'halogen-headless.purescri.pt');\" && spago -x site.dhall build --then \"webpack --env production\"",
     "dev": "concurrently \"webpack-dev-server\" \"spago -x site.dhall build -w\"",
     "format": "purs-tidy format-in-place src/**/*.purs test/**/*.purs"
   },
