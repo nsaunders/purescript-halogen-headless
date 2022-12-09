@@ -1,4 +1,4 @@
-name: Site
+name: CI
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
       - master
 
 jobs:
-  publish:
-    name: Publish
+  build:
+    name: Build
 
     runs-on: ubuntu-latest
     steps:
@@ -19,6 +19,9 @@ jobs:
         with:
           purescript: "unstable"
           purs-tidy: "latest"
+
+      - name: Check formatting
+        run: purs-tidy check src test
 
       - name: Cache PureScript dependencies
         uses: actions/cache@v2
@@ -34,16 +37,22 @@ jobs:
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
           path: node_modules
 
-      - name: Install PureScript dependencies
-        run: spago -x site.dhall install
+      - name: Install main PureScript dependencies
+        run: spago install
+
+      - name: Build main source
+        run: spago build --no-install --purs-args '--censor-lib --strict'
+
+      - name: Run tests
+        run: spago -x test.dhall test
 
       - name: Install Node.js dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build site
         run: npm run bundle
 
-      - name: Deploy
+      - name: Deploy site
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/master'
         with:
