@@ -1,0 +1,6 @@
+package:
+  name: halogen-headless
+  dependencies:
+    - effect
+    - halogen-hooks
+    - web-resize-observer

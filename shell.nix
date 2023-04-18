@@ -8,22 +8,25 @@ let
   # 2. Obtain the sha256 hash <sha256> via `nix-prefetch-url --unpack https://github.com/justinwoo/easy-purescript-nix/archive/<rev>.tar.gz`.
   # 3. Update the <rev> and <sha256> below.
   pursPkgs = import (pkgs.fetchFromGitHub {
-    owner = "justinwoo";
+    owner = "f-f";
     repo = "easy-purescript-nix";
-    rev = "ee51a6d459b8fecfcb10f24ca9728e649c6a9e00";
-    sha256 = "1w4k6mcayyg6388na0cca5qx94sm99xn3na26x2w34jlyz3bwl3m";
+    rev = "b02cff3db1671fc8fb76a680597a216a9c9b2d03";
+    sha256 = "0ihh6h29jy9gc9kfal5jgd98cmb24ccxl8kkvsl7ddb701bypz5x";
   }) {inherit pkgs;};
 in
   pkgs.stdenv.mkDerivation {
-    name = "halogen-headless";
-    buildInputs = with pursPkgs; [
-      purs
-      spago
-      pulp
-      purs-tidy
-
-      pkgs.esbuild
-      pkgs.nodejs-16_x
-      pkgs.nodePackages.bower
-    ];
+    name = "purescript-halogen-headless";
+    buildInputs = with pursPkgs;
+      [
+        purs
+        spago-next
+        pulp
+        purs-tidy
+      ]
+      ++ (with pkgs; [
+        esbuild
+        nodejs-16_x
+        nodePackages.bower
+        watchexec
+      ]);
   }

@@ -1,23 +1,21 @@
 {
   "private": true,
   "scripts": {
-    "bundle": "node -e \"var fs=require('fs');var path=require('path');require('mkdirp').sync(path.resolve(process.cwd(), 'public'));fs.writeFileSync(path.resolve(process.cwd(), 'public', 'CNAME'), 'halogen-headless.purescri.pt');\" && spago -x site.dhall build --then \"webpack --env production\"",
-    "dev": "concurrently \"webpack-dev-server\" \"spago -x site.dhall build -w\"",
-    "format": "purs-tidy format-in-place src/**/*.purs test/**/*.purs"
+    "bundle": "spago build && webpack -- --env production",
+    "start": "spago build && concurrently \"webpack-dev-server\" \"watchexec -w lib -w site -e purs \\\"spago build\\\"\""
   },
   "devDependencies": {
     "@fontsource/noto-sans": "^4.5.11",
     "@fontsource/noto-sans-mono": "^4.5.12",
-    "concurrently": "^7.6.0",
+    "concurrently": "^8.0.1",
     "css-loader": "^6.7.2",
-    "execa": "^6.1.0",
+    "execute-module-loader": "^1.0.0",
     "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.7.2",
     "mkdirp": "^1.0.4",
-    "val-loader": "^5.0.1",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1",
-    "webpack-virtual-modules": "^0.4.6"
+    "webpack-virtual-modules": "^0.5.0"
   }
 }

@@ -12,39 +12,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Set up a PureScript toolchain
-        uses: purescript-contrib/setup-purescript@main
-        with:
-          purescript: "unstable"
-          purs-tidy: "latest"
+      - name: Install PureScript tooling
+        run: npm install -g purescript@0.15.8 spago@next esbuild@0.13.12 purs-tidy@0.9.2
 
       - name: Check formatting
-        run: purs-tidy check site src test
+        run: purs-tidy check lib site
 
       - name: Cache PureScript dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
-          key: ${{ runner.os }}-spago-${{ hashFiles('**/*.dhall') }}
+          key: ${{ runner.os }}-spago-${{ hashFiles('**/spago.yaml') }}
           path: |
             .spago
             output
 
       - name: Cache Node.js dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
           path: node_modules
 
-      - name: Install main PureScript dependencies
+      - name: Install PureScript dependencies
         run: spago install
 
-      - name: Build main source
-        run: spago build --no-install --purs-args '--censor-lib --strict'
+      - name: Build source
+        run: spago build --pedantic-packages --purs-args '--censor-lib --strict'
 
       - name: Run tests
-        run: spago -x test.dhall test
+        run: spago test
 
       - name: Install Node.js dependencies
         run: npm ci

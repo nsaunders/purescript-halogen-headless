@@ -9,10 +9,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default ({ production }) => ({
   mode: production ? "production" : "development",
   entry: {
-    app: path.resolve(__dirname, "app.virtual.mjs"),
+    app: [
+      "./app.virtual.js",
+      path.join(__dirname, "output", "Site.CSS", "index.js?css"),
+    ],
   },
   output: {
-    path: path.resolve(__dirname, "public"),
+    path: path.join(__dirname, "public"),
     filename: `[name]${production ? ".[contenthash]" : ""}.js`,
   },
   plugins: [
@@ -21,20 +24,7 @@ export default ({ production }) => ({
       filename: `[name]${production ? ".[contenthash]" : ""}.css`,
     }),
     new VirtualModulesPlugin({
-      [path.resolve(__dirname, "app.virtual.css")]: `
-        module.exports = () =>
-          import("execa")
-            .then(({ execa }) => execa("node", ["-e", "import(require('path').resolve(__dirname, 'output', 'Site.CSS', 'index.js')).then(({ sheet }) => process.stdout.write(sheet))"]))
-            .then(({ stdout: code }) => ({
-              code: \`
-                @import "@fontsource/noto-sans";
-                @import "@fontsource/noto-sans-mono";
-                \${code}
-              \`,
-            }))
-      `,
-      [path.resolve(__dirname, "app.virtual.mjs")]: `
-        import "./app.virtual.css";
+      "./app.virtual.js": `
         import { main } from "./output/Site.Main/index.js";
         main();
       `,
@@ -53,8 +43,13 @@ export default ({ production }) => ({
         ],
       },
       {
-        test: path.resolve(__dirname, "app.virtual.css"),
-        use: "val-loader",
+        test: /\.js$/,
+        resourceQuery: /css/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          "execute-module-loader?export=sheet",
+        ],
       },
       {
         test: /\.woff2?$/,

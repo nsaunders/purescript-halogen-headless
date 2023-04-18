@@ -1,0 +1,12 @@
+package:
+  name: site
+  bundle:
+    main: Site.Main
+  dependencies:
+    - colors
+    - halogen-headless
+    - halogen-hooks
+    - halogen-storybook
+    - foreign-object
+    - tecton
+    - tecton-halogen
