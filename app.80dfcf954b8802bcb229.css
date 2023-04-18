@@ -1,0 +1,95 @@
+body {
+  margin: 0;
+  font-family: "Noto Sans", sans-serif;
+}
+*.Storybook {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 20rem 1fr;
+  grid-template-rows: 4rem 1fr;
+}
+*.Storybook-logo, *.Storybook-nav {
+  border-color: hsla(0.0, 0.0%, 0.0%, 0.08);
+  border-width: 1px;
+  border-style: solid;
+  border-top-style: none;
+  border-left-style: none;
+}
+*.Storybook-logo {
+  display: flex;
+  align-items: center;
+  padding-left: 2rem;
+  text-decoration-line: none;
+  background-color: hsl(0.0, 0.0%, 98.04%);
+  color: hsl(0.0, 0.0%, 15.69%);
+}
+*.Storybook-nav {
+  grid-row-start: 2;
+  overflow-y: auto;
+  font-size: 0.875rem;
+  background-color: hsl(0.0, 0.0%, 98.04%);
+  border-bottom-style: none;
+}
+*.Storybook-nav-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+*.Storybook-nav-section {
+  margin: 1rem 0;
+}
+*.Storybook-nav-section-title {
+  color: hsl(0.0, 0.0%, 22.75%);
+  text-transform: uppercase;
+  font-weight: bold;
+  padding: 0.625rem 2rem;
+}
+*.Storybook-link {
+  display: block;
+  text-decoration-line: none;
+  padding: 0.625rem 2rem;
+  color: hsl(0.0, 0.0%, 15.69%);
+}
+*.Storybook-link:hover, *.Storybook-link.is-active {
+  color: hsl(207.06, 100.0%, 50.0%);
+}
+*.Storybook-main {
+  grid-column-start: 2;
+  grid-row-start: 1;
+  grid-row-end: -1;
+  padding: 2rem;
+  overflow: auto;
+}
+*.accordion__heading {
+  margin: 0;
+}
+*.accordion__trigger {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  border-style: none;
+  text-align: start;
+  font-family: "Noto Sans", sans-serif;
+  font-size: 1rem;
+  background-color: hsl(210.0, 98.2%, 44.1%);
+  color: hsl(210.0, 92.3%, 94.9%);
+}
+*.accordion__trigger:hover {
+  background-color: hsl(210.0, 97.9%, 36.9%);
+}
+*.accordion__trigger:active {
+  background-color: hsl(210.0, 98.7%, 29.4%);
+}
+*.accordion__trigger-indicator {
+  font-family: "Noto Sans Mono", monospace;
+  display: inline-block;
+  width: 1em;
+}
+*.accordion__panel {
+  overflow: hidden;
+  transition-property: height;
+  transition-duration: 250ms;
+}
+*.accordion__content {
+  padding: 1rem;
+}
