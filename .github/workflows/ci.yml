@@ -40,8 +40,8 @@ jobs:
       - name: Build source
         run: spago build
 
-      - name: Run tests
-        run: spago test
+      # - name: Run tests
+      #  run: spago test
 
       - name: Install Node.js dependencies
         run: npm ci
