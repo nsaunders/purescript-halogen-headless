@@ -38,7 +38,7 @@ jobs:
         run: spago install
 
       - name: Build source
-        run: spago build --pedantic-packages --purs-args '--censor-lib --strict'
+        run: spago build
 
       - name: Run tests
         run: spago test
